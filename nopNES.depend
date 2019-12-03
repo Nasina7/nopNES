@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1575336823 source:/home/zach/codeblocks/nopNES/main.cpp
+	"cpu.hpp"
+
+1575337386 /home/zach/codeblocks/nopNES/cpu.hpp
+	"include.hpp"
+
+1575335055 /home/zach/codeblocks/nopNES/include.hpp
+	<iostream>
+	<string>
+	<bitset>
+
