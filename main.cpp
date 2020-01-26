@@ -1,6 +1,5 @@
 #include "cpu.hpp"
 using namespace std;
-bool NMIthrottle;
 int main()
 {
     if( SDL_Init( SDL_INIT_VIDEO ) < 0)
@@ -11,9 +10,6 @@ int main()
     nopNESwindow = SDL_CreateWindow("nopNES Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetScale(renderer,2,2);
-    uint8_t scanlineTimer;
-    uint8_t prevScanlineTimer;
-    char options;
     if(beginning() == false)
     {
         printf("File Not Found!\n");
@@ -45,65 +41,31 @@ int main()
             }
         }
         NESOB.opcode = NESOB.memory[NESOB.pc];
-        prevScanlineTimer = NESOB.cycles % 134;
+        prevScanlineTimer = NESOB.cycles % cycleModulo;
         //printf("Opcode: 0x%X\n",NESOB.opcode);
         //cout<<newOpcode2<<endl;
-        doOpcode();
         //printf("PC: 0x%X\n",NESOB.pc);
+        doOpcode();
         handleOther();
         handleInterrupts();
+        handleScanlineStuff();
         //printRegs();
         //handleLog();
-        if(NESOB.scanline == 241 && renderThrottle == false)
-        {
-            renderThrottle = true;
-            newFrame = true;
-            currentFrame++;
-            printf("Current Frame: %i\n",currentFrame);
-        }
-        if(NESOB.scanline == 242)
-        {
-            renderThrottle = false;
-        }
-        scanlineTimer = NESOB.cycles % 134;
-        if(prevScanlineTimer > scanlineTimer)
-        {
-            NESOB.scanline++;
-            if(NESOB.scanline >= 241)
-            {
-                NESOB.Pbitbuffer = NESOB.memory[0x2002];
-                NESOB.Pbitbuffer[7] = 1;
-                NESOB.memory[0x2002] = NESOB.Pbitbuffer.to_ulong();
-            }
-            if(NESOB.scanline >= 241 && NMIthrottle == false)
-            {
-                NMIthrottle = true;
-                NMIrequest = true;
-            }
-            if(NESOB.scanline == 261)
-            {
-                NMIthrottle = false;
-                NESOB.Pbitbuffer = NESOB.memory[0x2002];
-                NESOB.Pbitbuffer[7] = 0;
-                NESOB.memory[0x2002] = NESOB.Pbitbuffer.to_ulong();
-                NESOB.scanline = 0x00;
-            }
-        }
         //printRegs();
-        if(NESOB.pc == 0x8E04)
+        if(NESOB.pc == 0xF50E)
         {
             //printf("Scanline: 0x%i\n",NESOB.scanline);
             //breakpoint = true;
         }
+        if(NESOB.memory[0x0001] == 0x3F)
+        {
+            //breakpoint = true;
+        }
         if(breakpoint == true)
         {
+            printRegs();
             printf("Continue?\n");
             cin>>options;
-            if(options == 'p')
-            {
-                printRegs();
-                //printf("VRAMaddr: 0x%X\n",NESOB.VRAMaddress2);
-            }
             if(options == 'm')
             {
                 memDump();
@@ -132,6 +94,7 @@ int main()
             //fclose (logfile);
             return 0;
         }
+
     }
     return 0;
 }

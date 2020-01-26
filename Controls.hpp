@@ -4,6 +4,11 @@ int handleControlsr()
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
 
+        case SDLK_INSERT:
+            printf("Change Cycle Modulo too: ");
+            cin>>cycleModulo;
+        break;
+
         case SDLK_LEFTBRACKET:
             showTile = false;
         break;
@@ -60,11 +65,11 @@ int handleControlsr()
         break;
 
         case SDLK_z:
-            controlBuffer[0] = 0;
+            controlBuffer[1] = 0;
         break;
 
         case SDLK_x:
-            controlBuffer[1] = 0;
+            controlBuffer[0] = 0;
         break;
 
         case SDLK_SPACE:
@@ -129,11 +134,11 @@ int handleControls()
         break;
 
         case SDLK_z:
-            controlBuffer[0] = 1;
+            controlBuffer[1] = 1;
         break;
 
         case SDLK_x:
-            controlBuffer[1] = 1;
+            controlBuffer[0] = 1;
         break;
 
         case SDLK_SPACE:

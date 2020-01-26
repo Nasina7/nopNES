@@ -4,13 +4,12 @@ void nesPowerOn()
 {
     //NESOB.pc = 0xC000;
     NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC]; // Sets Initial PC Value
-    NESOB.pflag = 0x34;
+    NESOB.pflag = 0x24;
     NESOB.sp = 0xFD;
     NESOB.a = 0x00;
     NESOB.x = 0x00;
     NESOB.y = 0x00;
 }
-bool NMIrequest;
 void handleNMI()
 {
     NESOB.Xbitbuffer = NESOB.memory[0x2000];
@@ -36,7 +35,6 @@ void handleInterrupts()
 {
     handleNMI();
 }
-
 int doOpcode()
 {
     switch (NESOB.opcode)
@@ -185,11 +183,7 @@ int doOpcode()
         break;
 
         case 0x11:
-            NESOB.prevValue = NESOB.a;
-            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue163 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
-            NESOB.tempValue163 += NESOB.y;
-            NESOB.a = NESOB.a | NESmemRead(NESOB.tempValue163);
+            NESOB.a = NESOB.a | NESmemRead(indirectYget());
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 2;
@@ -204,8 +198,7 @@ int doOpcode()
             {
                 NESOB.tempValue16 -= 0x0100;
             }
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.a = NESOB.a | NESmemRead(NESOB.tempValue162);
+            NESOB.a = NESOB.a | NESmemRead(NESOB.tempValue16);
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 2;
@@ -219,16 +212,15 @@ int doOpcode()
             {
                 NESOB.tempValue16 -= 0x0100;
             }
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.prevValue = NESOB.memory[NESOB.tempValue162];
+            NESOB.prevValue = NESOB.memory[NESOB.tempValue16];
             NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Xbitbuffer = NESOB.memory[NESOB.tempValue162];
+            NESOB.Xbitbuffer = NESOB.memory[NESOB.tempValue16];
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue162] = NESOB.Xbitbuffer.to_ulong();
-            handleFlags7(NESOB.memory[NESOB.tempValue162],NESOB.prevValue);
-            handleFlags1(NESOB.memory[NESOB.tempValue162],NESOB.prevValue);
+            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
+            handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -458,10 +450,7 @@ int doOpcode()
 
         case 0x31:
             NESOB.prevValue = NESOB.a;
-            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue163 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
-            NESOB.tempValue163 += NESOB.y;
-            NESOB.a = NESOB.a & NESmemRead(NESOB.tempValue163);
+            NESOB.a = NESOB.a & NESmemRead(indirectYget());
             handleFlags7(NESOB.a,NESOB.prevValue);
             handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
@@ -484,31 +473,26 @@ int doOpcode()
         break;
 
         case 0x36:
+            //breakpoint = true;
             NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
             NESOB.tempValue16 = NESOB.tempValue16 + NESOB.x;
             if(NESOB.tempValue16 >= 0x100)
             {
-                NESOB.tempValue16 -= 0x0100;
+                NESOB.tempValue16 = NESOB.tempValue16 - 0x0100;
             }
-            NESOB.tempValue = NESmemRead(NESOB.tempValue16);
-            NESOB.prevValue = NESOB.tempValue;
-            NESOB.Abitbuffer = NESOB.tempValue;
+            NESOB.tempValue2 = NESmemRead(NESOB.tempValue16);
+            NESOB.prevValue = NESOB.tempValue2;
             NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Abitbuffer = NESOB.tempValue2;
             NESOB.Xbitbuffer[7] = NESOB.Pbitbuffer[0];
-            NESOB.Pbitbuffer[0] = NESOB.Abitbuffer[7];
-            NESOB.Abitbuffer = NESOB.Abitbuffer << 1;
+            NESOB.Xbitbuffer[0] = NESOB.Abitbuffer[7];
+            NESOB.Abitbuffer <<= 1;
             NESOB.Abitbuffer[0] = NESOB.Xbitbuffer[7];
+            NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            NESOB.tempValue = NESOB.Abitbuffer.to_ulong();
-            handleFlags7(NESOB.tempValue, NESOB.prevValue);
-            NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Pbitbuffer[1] = 0;
-            if(NESOB.prevValue != 0x00 && NESOB.tempValue == 0x00)
-            {
-                NESOB.Pbitbuffer[1] = 1;
-            }
-            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            NESmemWrite(NESOB.tempValue, NESOB.tempValue16);
+            NESOB.memory[NESOB.tempValue16] = NESOB.Abitbuffer.to_ulong();
+            handleFlags7(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
+            handleFlags1(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -702,11 +686,7 @@ int doOpcode()
         break;
 
         case 0x51:
-            NESOB.prevValue = NESOB.a;
-            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue163 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
-            NESOB.tempValue163 += NESOB.y;
-            NESOB.a = NESOB.a ^ NESmemRead(NESOB.tempValue163);
+            NESOB.a = NESOB.a ^ NESmemRead(indirectYget());
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 2;
@@ -735,16 +715,15 @@ int doOpcode()
             {
                 NESOB.tempValue16 -= 0x0100;
             }
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.prevValue = NESOB.memory[NESOB.tempValue162];
+            NESOB.prevValue = NESOB.memory[NESOB.tempValue16];
             NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Xbitbuffer = NESOB.memory[NESOB.tempValue162];
+            NESOB.Xbitbuffer = NESOB.memory[NESOB.tempValue16];
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer >> 1;
-            NESOB.memory[NESOB.tempValue162] = NESOB.Xbitbuffer.to_ulong();
-            handleFlags7(NESOB.memory[NESOB.tempValue162],NESOB.prevValue);
-            handleFlags1(NESOB.memory[NESOB.tempValue162],NESOB.prevValue);
+            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
+            handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -914,13 +893,16 @@ int doOpcode()
 
         case 0x6C:
             NESOB.tempValue162 = NESmemRead(NESOB.pc + 2) << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue = NESmemRead(NESOB.tempValue162 + 1);
+            NESOB.prevValue = NESOB.tempValue162;
             NESOB.tempValue2 = NESmemRead(NESOB.tempValue162);
-            if(NESmemRead(NESOB.pc + 1) == 0xFF)
+            NESOB.tempValue = NESmemRead(NESOB.tempValue162 + 1);
+            if(NESOB.prevValue == 0xFF)
             {
-                NESOB.tempValue = 0x00;
+                NESOB.tempValue162++;
+                NESOB.tempValue162 -= 0x100;
+                NESOB.tempValue = NESmemRead(NESOB.tempValue162);
             }
-            NESOB.pc =  NESOB.tempValue << 8 | NESOB.tempValue2;
+            NESOB.pc = NESOB.tempValue << 8 | NESOB.tempValue2;
             NESOB.cycles += 5;
         break;
 
@@ -989,23 +971,19 @@ int doOpcode()
 
         case 0x71:
             NESOB.prevValue = NESOB.a;
-            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue163 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
-            NESOB.tempValue163 += NESOB.y;
-            NESOB.tempValue16 = NESOB.a + NESmemRead(NESOB.tempValue163);
             NESOB.Pbitbuffer = NESOB.pflag;
-            if(NESOB.Pbitbuffer[0] == 1)
+            a = NESOB.a;
+            b = NESmemRead(indirectYget());
+            diff = a + b + NESOB.Pbitbuffer[0];
+            NESOB.a = (uint8_t)diff;
+            if(NESOB.a == 0x00)
             {
-                NESOB.tempValue16++;
+                NESOB.Pbitbuffer[1] = 1;
             }
-            NESOB.a = NESOB.tempValue16;
-            if(NESOB.tempValue16 >= 0x0100)
-            {
-                NESOB.Pbitbuffer[0] = 1;
-                NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            }
-            handleFlags7(NESOB.a, NESOB.prevValue);
-            handleFlags1(NESOB.a, NESOB.prevValue);
+            NESOB.Pbitbuffer[0] = (diff >= 0x0100);
+            NESOB.Pbitbuffer[6] = ((a^~b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(NESOB.a, a);
             NESOB.pc += 2;
             NESOB.cycles += 5;
         break;
@@ -1134,7 +1112,14 @@ int doOpcode()
             {
                 NESOB.tempValue162 -= 0x0100;
             }
-            NESOB.tempValue16 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue2 = NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue162++;
+            if(NESOB.tempValue162 >= 0x0100)
+            {
+                NESOB.tempValue162 -= 0x0100;
+            }
+            NESOB.tempValue = NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue16 = NESOB.tempValue << 8 | NESOB.tempValue2;
             NESOB.memory[NESOB.tempValue16] = NESOB.a;
             NESOB.pc += 2;
             NESOB.cycles += 6;
@@ -1226,10 +1211,7 @@ int doOpcode()
         break;
 
         case 0x91:
-            NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.tempValue162 = NESOB.tempValue162 + NESOB.y;
-            NESmemWrite(NESOB.a, NESOB.tempValue162);
+            NESmemWrite(NESOB.a, indirectYget());
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -1299,17 +1281,21 @@ int doOpcode()
         break;
 
         case 0xA1:
-            NESOB.prevValue = NESOB.a;
-            NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue16 += NESOB.x;
-            if(NESOB.tempValue16 >= 0x0100)
+            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
+            NESOB.tempValue162 += NESOB.x;
+            if(NESOB.tempValue162 >= 0x0100)
             {
-                NESOB.tempValue16 -= 0x0100;
+                NESOB.tempValue162 -= 0x0100;
             }
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.a = NESmemRead(NESOB.tempValue162);
-            handleFlags7(NESOB.a,NESOB.prevValue);
-            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.tempValue2 = NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue162++;
+            if(NESOB.tempValue162 >= 0x0100)
+            {
+                NESOB.tempValue162 -= 0x0100;
+            }
+            NESOB.tempValue = NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue16 = NESOB.tempValue << 8 | NESOB.tempValue2;
+            NESOB.a = NESOB.memory[NESOB.tempValue16];
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -1434,13 +1420,9 @@ int doOpcode()
         break;
 
         case 0xB1:
-            NESOB.prevValue = NESOB.a;
-            NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.tempValue162 = NESOB.tempValue162 + NESOB.y;
-            NESOB.a = NESmemRead(NESOB.tempValue162);
-            handleFlags7(NESOB.a, NESOB.prevValue);
-            handleFlags1(NESOB.a, NESOB.prevValue);
+            NESOB.a = NESmemRead(indirectYget());
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
             NESOB.cycles += 5;
         break;
@@ -1500,7 +1482,9 @@ int doOpcode()
 
         case 0xB9:
             NESOB.prevValue = NESOB.a; // Load PrevValue with A.
-            NESOB.a = NESOB.memory[((NESOB.memory[NESOB.pc + 2] << 8 | NESOB.memory[NESOB.pc + 1]) + NESOB.y)]; // Load data in memory at location stored at pc+1 and pc+2 + x.
+            NESOB.tempValue16 = NESmemRead(NESOB.pc + 2) << 8 | NESmemRead(NESOB.pc + 1);
+            NESOB.tempValue16 += NESOB.y;
+            NESOB.a = NESOB.memory[NESOB.tempValue16]; // Load data in memory at location stored at pc+1 and pc+2 + x.
             handleFlags7(NESOB.a,NESOB.prevValue); // Handles the flags
             handleFlags1(NESOB.a,NESOB.prevValue); // Handles the flags
             NESOB.pc += 3;
@@ -1529,7 +1513,9 @@ int doOpcode()
 
         case 0xBD:
             NESOB.prevValue = NESOB.a; // Load PrevValue with A.
-            NESOB.a = NESOB.memory[((NESOB.memory[NESOB.pc + 2] << 8 | NESOB.memory[NESOB.pc + 1]) + NESOB.x)]; // Load data in memory at location stored at pc+1 and pc+2 + x.
+            NESOB.tempValue16 = NESOB.memory[NESOB.pc + 2] << 8 | NESOB.memory[NESOB.pc + 1];
+            NESOB.tempValue16 += NESOB.x;
+            NESOB.a = NESmemRead(NESOB.tempValue16); // Load data in memory at location stored at pc+1 and pc+2 + x.
             handleFlags7(NESOB.a,NESOB.prevValue); // Handles the flags
             handleFlags1(NESOB.a,NESOB.prevValue); // Handles the flags
             NESOB.pc += 3;
@@ -1693,14 +1679,10 @@ int doOpcode()
 
         case 0xD1:
             NESOB.prevValue = NESOB.a;
-            NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.tempValue162 = NESOB.tempValue162 + NESOB.y;
-            NESOB.tempValue = NESOB.a;
-            NESOB.tempValue = NESOB.tempValue - NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue = NESOB.a - NESmemRead(indirectYget());
             handleFlags7(NESOB.tempValue, NESOB.prevValue);
             handleFlags1(NESOB.tempValue, NESOB.prevValue);
-            handleFlags0(NESOB.prevValue, NESmemRead(NESOB.tempValue162));
+            handleFlags0(NESOB.prevValue, NESmemRead(indirectYget()));
             NESOB.pc += 2;
             NESOB.cycles += 5;
         break;
@@ -1713,11 +1695,10 @@ int doOpcode()
             {
                 NESOB.tempValue16 -= 0x0100;
             }
-            NESOB.tempValue162 = NESmemRead(NESOB.tempValue16 + 1) << 8 | NESmemRead(NESOB.tempValue16);
-            NESOB.tempValue = NESOB.a - NESmemRead(NESOB.tempValue162);
+            NESOB.tempValue = NESOB.a - NESmemRead(NESOB.tempValue16);
             handleFlags7(NESOB.tempValue, NESOB.prevValue);
             handleFlags1(NESOB.tempValue, NESOB.prevValue);
-            handleFlags0(NESOB.prevValue, NESmemRead(NESOB.tempValue162));
+            handleFlags0(NESOB.prevValue, NESmemRead(NESOB.tempValue16));
             NESOB.pc += 2;
             NESOB.cycles += 4;
         break;
@@ -1812,6 +1793,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -1842,6 +1824,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 2;
             NESOB.cycles += 3;
         break;
@@ -1881,6 +1864,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 2;
             NESOB.cycles += 2;
         break;
@@ -1916,6 +1900,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 3;
             NESOB.cycles += 4;
         break;
@@ -1956,31 +1941,20 @@ int doOpcode()
         break;
 
         case 0xF1:
-            NESOB.prevValue = NESOB.a;
-            NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
-            NESOB.tempValue163 = NESmemRead(NESOB.tempValue162 + 1) << 8 | NESmemRead(NESOB.tempValue162);
-            NESOB.tempValue163 += NESOB.y;
-            NESOB.tempValue16 = NESOB.a - NESmemRead(NESOB.tempValue163);
             NESOB.Pbitbuffer = NESOB.pflag;
-            if(NESOB.Pbitbuffer[0] == 1)
+            a = NESOB.a;
+            b = NESmemRead(indirectYget());
+            diff = a - b - !NESOB.Pbitbuffer[0];
+            NESOB.a = (uint8_t)diff;
+            NESOB.Pbitbuffer[1] = 0;
+            if(NESOB.a == 0x00 && a != 0x00)
             {
-                NESOB.tempValue16--;
+                NESOB.Pbitbuffer[1] = 1;
             }
-            NESOB.a = NESOB.tempValue16;
-            if(NESOB.tempValue16 >= 0x1000)
-            {
-                NESOB.Pbitbuffer[0] = 0;
-                NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            }
-            handleFlags7(NESOB.a, NESOB.prevValue);
-            handleFlags1(NESOB.a, NESOB.prevValue);
-            NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Pbitbuffer[6] = 0;
-            if((NESOB.prevValue & 0x80) == false && (NESOB.a & 0x80) == true) // BUG HERE! FIX LATER
-            {
-                NESOB.Pbitbuffer[6] = 1;
-            }
+            NESOB.Pbitbuffer[0] = diff >= 0x00;
+            NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 2;
             NESOB.cycles += 5;
         break;
@@ -2006,6 +1980,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 2;
             NESOB.cycles += 4;
         break;
@@ -2049,6 +2024,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 3;
             NESOB.cycles += 4;
         break;
@@ -2069,6 +2045,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = diff >= 0x00;
             NESOB.Pbitbuffer[6] = ((a^b)&0x80) != 0 && ((a^NESOB.a)&0x80) != 0;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            handleFlags7(diff, b);
             NESOB.pc += 3;
             NESOB.cycles += 4;
         break;
