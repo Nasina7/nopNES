@@ -7,6 +7,7 @@
 int cycleModulo = 113; // 134 113 90
 std::bitset<8> controlBuffer;
 uint64_t currentFrame;
+uint64_t currentPPUFrame;
 bool newFrame;
 bool exitLoop;
 bool newOpcode;
@@ -209,7 +210,7 @@ int handleScanlineStuff()
             renderThrottle = true;
             newFrame = true;
             currentFrame++;
-            printf("Current Frame: %i\n",currentFrame);
+            //printf("Current Frame: %i\n",currentFrame);
         }
         if(NESOB.scanline == 242)
         {
@@ -240,15 +241,22 @@ int handleScanlineStuff()
                 NESOB.scanline = 0x00;
             }
         }
+    return 0;
 }
+uint64_t curFPS;
+uint64_t endFPS;
 int doBenchmark()
 {
     beginBenchmark = true;
     currentFpsonStart = currentFrame;
+    curFPS = currentPPUFrame;
     sleep(1);
+    endFPS = currentPPUFrame;
     currentFpsonEnd = currentFrame;
+    endFPS = endFPS - curFPS;
     currentFpsonEnd = currentFpsonEnd - currentFpsonStart;
-    printf("Acomplished %i FPS in the time it should take to do 60 FPS!\n", currentFpsonEnd);
+    printf("Acomplished %i CPU FPS in the time it should take to do 60 CPU FPS!\n", currentFpsonEnd);
+    printf("Acomplished %i PPU FPS in the time it should take to do 60 PPU FPS!\n", endFPS);
     beginBenchmark = false;
     return 0;
 }
@@ -431,7 +439,7 @@ int NESmemWrite(uint8_t value, uint16_t location)
         break;
 
         case 0x2008 ... 0x3FFF:
-            printf("HMMM\n\n\n\n\n\n\n\n");
+            //printf("HMMM\n\n\n\n\n\n\n\n");
             locationMod8 = location % 0x08;
             location8 = 0x20 << 8 | locationMod8;
             location = location8;
@@ -615,6 +623,7 @@ int NESmemWrite(uint8_t value, uint16_t location)
     {
         NESOB.memory[location] = value;
     }
+    return 0;
 }
 uint8_t controllercount;
 std::bitset<8> resultcontrol;

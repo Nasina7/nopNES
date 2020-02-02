@@ -16,7 +16,7 @@ void handleNMI()
     if(NESOB.Xbitbuffer[7] == 1 && NMIrequest == true)
     {
         NMIrequest = false;
-        printf("NMI\n");
+        //printf("NMI\n");
         NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
         NESOB.higherPC = NESOB.pc >> 8;
         NESOB.lowerPC = NESOB.pc;

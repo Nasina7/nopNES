@@ -168,3 +168,23 @@ int handleControls()
         }
     return 0;
 }
+bool SDLinput;
+int handleSDLcontrol()
+{
+    while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
+        {
+            if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
+            {
+                NESOB.closeProgram = true;
+            }
+            if (SDL_EVENT_HANDLING.type == SDL_KEYDOWN) // If a key is being pressed, handle controls.
+            {   // Handle Controls
+                handleControls();
+            }
+            if (SDL_EVENT_HANDLING.type == SDL_KEYUP)
+            {
+                handleControlsr();
+            }
+        }
+    handleSDLcontrol();
+}

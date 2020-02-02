@@ -223,6 +223,8 @@ int handleSprites()
     uint16_t spritePatIndex = OAMmem[1] << 4;
     uint8_t spriteAttributes = OAMmem[2];
     uint8_t spriteXpos = OAMmem[3];
+    //uint8_t temp1;
+    //uint8_t temp2;
     ypixS = spriteYpos;
     xpixS = spriteXpos;
     spriteYpos += 8;
@@ -231,10 +233,18 @@ int handleSprites()
     bitcountS = 7;
     while(currentSprite != 0x100)
     {
+        if(spriteYpos >= 0xF8)
+        {
+            spriteYpos -= 0xF8;
+        }
         while(ypixS != spriteYpos)
         {
             graphiclineS = NESOB.PPUmemory[spritePatIndex];
             graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            if(spriteXpos >= 0xF8)
+            {
+                spriteXpos -= 0xF8;
+            }
             while(xpixS != spriteXpos + 8)
             {
                 chooseRenderColorSprite(spriteAttributes);
@@ -245,13 +255,21 @@ int handleSprites()
                 xpixS++;
                 bitcountS--;
                 dontRenderSprite = false;
+                //printf("xpix:0x%X\n", xpixS);
+                //printf("sprXpos:0x%X\n", spriteXpos + 8);
             }
             ypixS += 1;
             xpixS = spriteXpos;
             bitcountS = 7;
             spritePatIndex++;
+            //printf("curSpr:0x%X\n", currentSprite);
         }
         currentSprite += 4;
+        if(currentSprite == 0xFC)
+        {
+            //printf("wowie\n");
+            return 0;
+        }
         spriteYpos = OAMmem[currentSprite];
         spritePatIndex = OAMmem[currentSprite + 1] << 4;
         spriteAttributes = OAMmem[currentSprite + 2];
@@ -260,10 +278,15 @@ int handleSprites()
         xpixS = spriteXpos;
         spriteYpos += 8;
         bitcountS = 7;
+
     }
+    return 0;
 }
 int handleGraphicsBASIC()
 {
+    uint8_t Xcounter = 32;
+    uint8_t Ycounter = 32;
+    //return 0;
     bitcount = 7;
     tiledatalocation1 = nametableAddr;
     tilelocation = NESOB.PPUmemory[tiledatalocation1];
@@ -277,9 +300,9 @@ int handleGraphicsBASIC()
     ypixtile2 = 0;
     SDL_SetRenderDrawColor(renderer,0x00,0x00,0xFF,0xFF);
     SDL_RenderClear(renderer);
-    while(ypixtile != 32)
+    while(Ycounter != 0)
     {
-        while(xpixtile != 32)
+        while(Xcounter != 0)
         {
             while(ypixtile2 != 8)
             {
@@ -288,7 +311,7 @@ int handleGraphicsBASIC()
                 while(xpixtile2 != 8)
                 {
                     chooseRenderColor();
-                    if(showGrid == true && xpix % 32 == 0 || showGrid == true && ypix % 32 == 0)
+                    if((showGrid == true && xpix % 32 == 0) || (showGrid == true && ypix % 32 == 0))
                     {
                         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
                     }
@@ -323,6 +346,7 @@ int handleGraphicsBASIC()
             }
             //printf("testing\n");
             xpixtile++;
+            Xcounter--;
             ypix = (ypixtile * 8);
             xpix = (xpixtile * 8);
             xpixtile2 = 0;
@@ -339,13 +363,17 @@ int handleGraphicsBASIC()
         }
         xpixtile = 0x00;
         ypixtile++;
+        Xcounter = 32;
+        Ycounter--;
         ypix = (ypixtile * 8);
         xpix = (xpixtile * 8);
     }
     handleSprites();
     SDL_RenderPresent(renderer);
-    printf("ScrollX: 0x%X\n",scrollx);
-    printf("ScrollY: 0x%X\n",scrolly);
+    //printf("ScrollX: 0x%X\n",scrollx);
+    //printf("ScrollY: 0x%X\n",scrolly);
+    currentPPUFrame++;
+    printf("Current PPU Frame: %i\n",currentPPUFrame);
     while(true)
     {
         if(newFrame == true)
