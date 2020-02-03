@@ -4,6 +4,10 @@ int handleControlsr()
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
 
+        case SDLK_3:
+            cin>>blitsu;
+        break;
+
         case SDLK_INSERT:
             printf("Change Cycle Modulo too: ");
             cin>>cycleModulo;

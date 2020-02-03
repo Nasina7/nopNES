@@ -203,12 +203,27 @@ char options;
 bool renderThrottle;
 bool NMIrequest;
 bool read2002vb;
+bool throttleCPU = false;
+bool doneThrottle = false;
+bool reach261 = false;
+void throttleCPUfunc()
+{
+    throttleCPU = false;
+    SDL_Delay(16);
+    while(throttleCPU == false)
+    {
+
+    }
+    doneThrottle = true;
+
+
+}
 int handleScanlineStuff()
 {
         if(NESOB.scanline == 241 && renderThrottle == false)
         {
             renderThrottle = true;
-            newFrame = true;
+            //newFrame = true;
             currentFrame++;
             //printf("Current Frame: %i\n",currentFrame);
         }
@@ -220,6 +235,7 @@ int handleScanlineStuff()
         if(prevScanlineTimer > scanlineTimer)
         {
             NESOB.scanline++;
+            newFrame = true;
             if(NESOB.scanline >= 241)
             {
                 NESOB.Pbitbuffer = NESOB.memory[0x2002];

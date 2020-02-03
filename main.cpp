@@ -8,7 +8,15 @@ int main()
         return 1;
     }
     nopNESwindow = SDL_CreateWindow("nopNES Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
+    texture = SDL_CreateTexture
+    (
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        256, 240
+    );
+
     SDL_RenderSetScale(renderer,2,2);
     if(beginning() == false)
     {
@@ -23,10 +31,13 @@ int main()
     fclose(pal);
     thread graphic (handleGraphicsBASIC);
     thread input (handleSDLcontrol);
+    thread throttle (throttleCPUfunc);
+    throttle.detach();
     NESOB.opcode = NESOB.memory[NESOB.pc];
     while(NESOB.dontSetTrue == false) // Begin Loop
     {
     //SDLinput = true;
+        throttleCPU = true;
         NESOB.opcode = NESOB.memory[NESOB.pc];
         prevScanlineTimer = NESOB.cycles % cycleModulo;
         //printf("Opcode: 0x%X\n",NESOB.opcode);
@@ -39,7 +50,7 @@ int main()
         //printRegs();
         //handleLog();
         //printRegs();
-        if(NESOB.pc == 0xF50E)
+        if(NESOB.pc == 0xE32D)
         {
             //printf("Scanline: 0x%i\n",NESOB.scanline);
             //breakpoint = true;
@@ -61,6 +72,10 @@ int main()
             {
                 breakpoint = false;
             }
+            if(options == 'b')
+            {
+                breakpoint = true;
+            }
             if(options == 'r')
             {
                 NESOB.closeProgram = true;
@@ -80,6 +95,17 @@ int main()
             exitLoop = true;
             //fclose (logfile);
             return 0;
+        }
+        if((((NESOB.cycles % 29780) >= 0) && ((NESOB.cycles % 29780) <= 6)) )
+        {
+            SDL_Delay(6);
+            //throttleCPU = true;
+            //while(doneThrottle == false)
+            //{
+
+            //}
+            //thread throttle (throttleCPUfunc);
+            //throttle.detach();
         }
 
     }

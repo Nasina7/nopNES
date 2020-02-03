@@ -1,5 +1,7 @@
 #include "include.hpp"
 uint8_t bitcount;
+SDL_Texture* texture = NULL;
+SDL_Rect* mainScreen;
 std::bitset<8> graphicline;
 std::bitset<8> graphicline2;
 std::bitset<8> graphiclineS;
@@ -16,8 +18,8 @@ uint8_t xpixtile;
 uint8_t ypixtile;
 uint8_t xpixtile2;
 uint8_t ypixtile2;
-uint8_t xpix;
-uint8_t ypix;
+uint16_t xpix;
+uint16_t ypix;
 uint8_t tilelocation;
 uint16_t tiledatalocation1;
 int pal00[4] = {0xFF,0xFF,0xFF,0x00};
@@ -121,6 +123,7 @@ void palDetermine()
     color_02 = {pal10[0],pal10[1],pal10[2],pal10[3]};
     color_03 = {pal11[0],pal11[1],pal11[2],pal11[3]};
 }
+uint8_t palResult;
 void chooseRenderColor()
 {
     handleGrid();
@@ -129,17 +132,21 @@ void chooseRenderColor()
     if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 0)
     {
         SDL_SetRenderDrawColor(renderer,color_00.r,color_00.g,color_00.b,color_00.a);
+        palResult = 0;
     }
     if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 0)
     {
         SDL_SetRenderDrawColor(renderer,color_01.r,color_01.g,color_01.b,color_01.a);
+        palResult = 1;
     }
     if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 1)
     {
+        palResult = 2;
         SDL_SetRenderDrawColor(renderer,color_02.r,color_02.g,color_02.b,color_02.a);
     }
     if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 1)
     {
+        palResult = 3;
         SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
 }
@@ -213,6 +220,15 @@ void chooseRenderColorSprite(uint8_t spritePal)
         SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
 }
+uint64_t curPixx;
+uint64_t curPixy;
+uint32_t pixels[256 * 256];
+std::bitset<8> flipBitBuffer;
+int8_t helpXflip;
+uint8_t extramanipX;
+uint8_t help1;
+uint8_t help2;
+uint8_t spriteXflip;
 int handleSprites()
 {
     // Begin Sprite Code
@@ -221,13 +237,18 @@ int handleSprites()
     uint16_t currentSprite = 0;
     uint8_t spriteYpos = OAMmem[0];
     uint16_t spritePatIndex = OAMmem[1] << 4;
+    flipBitBuffer = OAMmem[2];
     uint8_t spriteAttributes = OAMmem[2];
     uint8_t spriteXpos = OAMmem[3];
+    help1 = spriteXpos + 8;
+    help2 = spriteYpos + 8;
     //uint8_t temp1;
     //uint8_t temp2;
     ypixS = spriteYpos;
     xpixS = spriteXpos;
     spriteYpos += 8;
+    helpXflip = 8;
+    spriteXflip = xpixS + 7;
     //printf("spriteY: 0x%X\n",spriteYpos);
     //printf("spriteX: 0x%X\n",spriteXpos);
     bitcountS = 7;
@@ -237,20 +258,25 @@ int handleSprites()
         {
             spriteYpos -= 0xF8;
         }
-        while(ypixS != spriteYpos)
+        while(ypixS != help2)
         {
             graphiclineS = NESOB.PPUmemory[spritePatIndex];
             graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
-            if(spriteXpos >= 0xF8)
-            {
-                spriteXpos -= 0xF8;
-            }
-            while(xpixS != spriteXpos + 8)
+
+            while(xpixS != help1)
             {
                 chooseRenderColorSprite(spriteAttributes);
+
                 if(dontRenderSprite != true)
                 {
-                    SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
+                        if(flipBitBuffer[6] == 0)
+                        {
+                            SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
+                        }
+                        if(flipBitBuffer[6] == 1)
+                        {
+                            SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
+                        }
                 }
                 xpixS++;
                 bitcountS--;
@@ -258,8 +284,10 @@ int handleSprites()
                 //printf("xpix:0x%X\n", xpixS);
                 //printf("sprXpos:0x%X\n", spriteXpos + 8);
             }
+            helpXflip = 8;
             ypixS += 1;
             xpixS = spriteXpos;
+            //spriteXflip = xpixS + 7;
             bitcountS = 7;
             spritePatIndex++;
             //printf("curSpr:0x%X\n", currentSprite);
@@ -272,8 +300,11 @@ int handleSprites()
         }
         spriteYpos = OAMmem[currentSprite];
         spritePatIndex = OAMmem[currentSprite + 1] << 4;
+        flipBitBuffer = OAMmem[currentSprite + 2];
         spriteAttributes = OAMmem[currentSprite + 2];
         spriteXpos = OAMmem[currentSprite + 3];
+        help1 = spriteXpos + 8;
+        help2 = spriteYpos + 8;
         ypixS = spriteYpos;
         xpixS = spriteXpos;
         spriteYpos += 8;
@@ -282,8 +313,14 @@ int handleSprites()
     }
     return 0;
 }
+int blitsu = 1024;
+uint8_t xpixsc;
+uint8_t ypixsc;
 int handleGraphicsBASIC()
 {
+    //printf("Frame\n");
+    //handleSprites();
+    //currentPPUFrame++;
     uint8_t Xcounter = 32;
     uint8_t Ycounter = 32;
     //return 0;
@@ -311,20 +348,35 @@ int handleGraphicsBASIC()
                 while(xpixtile2 != 8)
                 {
                     chooseRenderColor();
-                    if((showGrid == true && xpix % 32 == 0) || (showGrid == true && ypix % 32 == 0))
-                    {
-                        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-                    }
-                    if(showBlock == true && xpix % 16 == 0 || showBlock == true && ypix % 16 == 0)
-                    {
-                        SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-                    }
-                    if(showTile == true && xpix % 8 == 0 || showTile == true && ypix % 8 == 0)
-                    {
-                        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xFF, 0xFF);
-                    }
+
                     ypix2 = ypix;
-                    SDL_RenderDrawPoint(renderer,xpix,ypix2); // Middle
+                    xpixsc = xpix - scrollx;
+                    ypixsc = ypix - scrolly;
+                    if(scrolly > 240)
+                    {
+                        ypixsc = ypix;
+                    }
+                    curPixx = xpix;
+                    curPixy = (ypix) * 256;
+                    curPixx = curPixx + curPixy;
+                    if (palResult == 0)
+                    {
+                        pixels[curPixx] = pal00[0] << 24 | pal00[1] << 16 | pal00[2] << 8 | pal00[3];
+                    }
+                    if (palResult == 1)
+                    {
+                        pixels[curPixx] = pal01[0] << 24 | pal01[1] << 16 | pal01[2] << 8 | pal01[3];
+                    }
+                    if (palResult == 2)
+                    {
+                        pixels[curPixx] = pal10[0] << 24 | pal10[1] << 16 | pal10[2] << 8 | pal10[3];
+                    }
+                    if (palResult == 3)
+                    {
+                        pixels[curPixx] = pal11[0] << 24 | pal11[1] << 16 | pal11[2] << 8 | pal11[3];
+                    }
+                    //SDL_RenderDrawPoint(renderer,xpix - scrollx,ypix2 - scrolly); // Middle
+                    /*
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly)); // Right
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly) + 0x100); // Bottom-Right
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx),(ypix2 - scrolly) + 0x100); // Bottom
@@ -333,6 +385,7 @@ int handleGraphicsBASIC()
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx) - 0x100,(ypix2 - scrolly) - 0x100); // Top Left
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx),(ypix2 - scrolly) - 0x100); // Top
                     SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly) - 0x100); // Top Right
+                    */
                     xpix++;
                     bitcount--;
                     xpixtile2++;
@@ -368,18 +421,127 @@ int handleGraphicsBASIC()
         ypix = (ypixtile * 8);
         xpix = (xpixtile * 8);
     }
+    SDL_UpdateTexture(texture, mainScreen, pixels, blitsu);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
     handleSprites();
     SDL_RenderPresent(renderer);
     //printf("ScrollX: 0x%X\n",scrollx);
     //printf("ScrollY: 0x%X\n",scrolly);
     currentPPUFrame++;
-    printf("Current PPU Frame: %i\n",currentPPUFrame);
+    //printf("Current PPU Frame: %i\n",currentPPUFrame);
     while(true)
     {
         if(newFrame == true)
         {
             newFrame = false;
             handleGraphicsBASIC();
+        }
+        if(exitLoop == true)
+        {
+            return 0;
+        }
+    }
+}
+int handleGraphicsBASICSCAN()
+{
+    //printf("Frame\n");
+    //handleSprites();
+    //currentPPUFrame++;
+    uint8_t Xcounter = 32;
+    uint8_t Ycounter = 32;
+    //return 0;
+    bitcount = 7;
+    tiledatalocation1 = nametableAddr + (NESOB.scanline / 8) * 32;
+    tilelocation = NESOB.PPUmemory[tiledatalocation1];
+    //tilelocation++;
+    tilecount = tilelocation << 4;
+    xpix = 0;
+    ypix = NESOB.scanline;
+    xpixtile = 0;
+    ypixtile = 0;
+    xpixtile2 = 0;
+    ypixtile2 = 0;
+    SDL_SetRenderDrawColor(renderer,0x00,0x00,0xFF,0xFF);
+    SDL_RenderClear(renderer);
+        while(Xcounter != 0)
+        {
+                graphicline = NESOB.PPUmemory[tilecount];
+                graphicline2 = NESOB.PPUmemory[tilecount + 8];
+                while(xpixtile2 != 8)
+                {
+                    chooseRenderColor();
+
+                    ypix2 = ypix;
+                    xpixsc = xpix - scrollx;
+                    ypixsc = ypix - scrolly;
+                    if(scrolly > 240)
+                    {
+                        ypixsc = ypix;
+                    }
+                    curPixx = xpix;
+                    curPixy = (ypix) * 240;
+                    curPixx = curPixx + curPixy;
+                    if (palResult == 0)
+                    {
+                        pixels[curPixx] = pal00[0] << 24 | pal00[1] << 16 | pal00[2] << 8 | pal00[3];
+                    }
+                    if (palResult == 1)
+                    {
+                        pixels[curPixx] = pal01[0] << 24 | pal01[1] << 16 | pal01[2] << 8 | pal01[3];
+                    }
+                    if (palResult == 2)
+                    {
+                        pixels[curPixx] = pal10[0] << 24 | pal10[1] << 16 | pal10[2] << 8 | pal10[3];
+                    }
+                    if (palResult == 3)
+                    {
+                        pixels[curPixx] = pal11[0] << 24 | pal11[1] << 16 | pal11[2] << 8 | pal11[3];
+                    }
+                    //SDL_RenderDrawPoint(renderer,xpix - scrollx,ypix2 - scrolly); // Middle
+                    /*
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly)); // Right
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly) + 0x100); // Bottom-Right
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx),(ypix2 - scrolly) + 0x100); // Bottom
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) - 0x100,(ypix2 - scrolly) + 0x100); // Bottom Left
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) - 0x100,(ypix2 - scrolly)); // Left
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) - 0x100,(ypix2 - scrolly) - 0x100); // Top Left
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx),(ypix2 - scrolly) - 0x100); // Top
+                    SDL_RenderDrawPoint(renderer,(xpix - scrollx) + 0x100,(ypix2 - scrolly) - 0x100); // Top Right
+                    */
+                    xpix++;
+                    bitcount--;
+                    xpixtile2++;
+                }
+            //printf("testing\n");
+            xpixtile++;
+            Xcounter--;
+            xpix = (xpixtile * 8);
+            xpixtile2 = 0;
+            ypixtile2 = 0;
+            tiledatalocation1++;
+            tilelocation = NESOB.PPUmemory[tiledatalocation1];
+            //tilelocation += 1;
+            //printf("tilelocation: 0x%X\n",tilelocation);
+            tilecount = tilelocation << 4;
+            if(bgpattable == true)
+            {
+                tilecount += 0x1000;
+            }
+        }
+    SDL_UpdateTexture(texture, mainScreen, pixels, blitsu);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    handleSprites();
+    SDL_RenderPresent(renderer);
+    //printf("ScrollX: 0x%X\n",scrollx);
+    //printf("ScrollY: 0x%X\n",scrolly);
+    currentPPUFrame++;
+    //printf("Current PPU Frame: %i\n",currentPPUFrame);
+    while(true)
+    {
+        if(newFrame == true)
+        {
+            newFrame = false;
+            handleGraphicsBASICSCAN();
         }
         if(exitLoop == true)
         {
