@@ -41,7 +41,6 @@
 				<Compiler>
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
-					<Add option="-std=c++11" />
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/include" />
 					<Add directory="/usr/i686-w64-mingw32/include" />
 				</Compiler>

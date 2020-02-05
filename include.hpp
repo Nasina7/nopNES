@@ -109,6 +109,11 @@ bool beginning()
     fclose(headerf);
     NESOB.prgsize = NESOB.header[0x04] * 16384;
     printf("PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
+    if(NESOB.prgsize > 0x8000)
+    {
+        printf("ROM SIZE IS TO LARGE!\nTHIS ROM SIZE IS NOT SUPPORTED.\n");
+        return false;
+    }
     NESOB.chrsize = NESOB.header[0x05] * 8192;
     printf("CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
     //printf("testing\n");

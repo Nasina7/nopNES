@@ -20,7 +20,7 @@ int main()
     SDL_RenderSetScale(renderer,2,2);
     if(beginning() == false)
     {
-        printf("File Not Found!\n");
+        printf("ERROR!\n");
         return 0;
     }
     currentFrame = 0;
