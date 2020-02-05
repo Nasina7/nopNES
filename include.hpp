@@ -2,7 +2,12 @@
 #include <string>
 #include <bitset>
 #include <SDL2/SDL.h>
-#include <thread>
+#ifdef __linux__
+    #include <thread>
+#endif // __linux__
+#ifdef _WIN32
+    #include "mingw.thread.h"
+#endif // _WIN32
 #include <unordered_map>
 int cycleModulo = 113; // 134 113 90
 std::bitset<8> controlBuffer;
@@ -89,8 +94,11 @@ int option2;
 using namespace std;
 bool beginning()
 {
-
-    cout<<"Welcome to nopNES!"<<endl<<"Rom Name: ";
+    #ifdef _WIN32
+        printf("WARNING!  You are using a windows build of nopNES!\nWindows Builds are experimental and thus may have bugs!\n");
+    #endif // _WIN32
+    //cout<<"Welcome to nopNES!"<<endl<<"Rom Name: ";
+    printf("Welcome to nopNES!\nRom Name: ");
     cin>>NESOB.filename;
     FILE* headerf = fopen(NESOB.filename, "rb");
     if(headerf == NULL)
@@ -103,22 +111,34 @@ bool beginning()
     printf("PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
     NESOB.chrsize = NESOB.header[0x05] * 8192;
     printf("CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
+    //printf("testing\n");
     FILE* rom = fopen(NESOB.filename, "rb");
+    //printf("testing\n");
     fseek(rom,0x10,SEEK_SET);
+    //printf("testing\n");
     fread(NESOB.memory + 0x8000,NESOB.prgsize,1,rom);
+    //printf("testing\n");
     if(NESOB.prgsize != 0x8000)
     {
         rewind(rom);
         fseek(rom,0x10,SEEK_SET);
         fread(NESOB.memory + 0xC000,NESOB.prgsize,1,rom);
     }
+    //printf("testing\n");
     fseek(rom,NESOB.prgsize + 0x10,SEEK_SET);
+    //printf("testing\n");
     fread(NESOB.PPUmemory, 0x2000, 1, rom);
+    //printf("testing\n");
     fclose(rom);
-    FILE* mem_dump = fopen ("log/memdump", "w+");
-    fwrite (NESOB.memory , sizeof(char), sizeof(NESOB.memory), mem_dump);
-    fclose (mem_dump);
-    cin>>option2;
+    //printf("testing\n");
+    #ifdef __linux__
+        FILE* mem_dump = fopen ("log/memdump", "w+");
+        fwrite (NESOB.memory , sizeof(char), sizeof(NESOB.memory), mem_dump);
+        fclose (mem_dump);
+        //printf("testingggggg\n");
+    #endif
+    //printf("testingg\n");
+    //cin>>option2;
     return true;
 }
 
@@ -130,7 +150,9 @@ int printRegs()
     printf("Y: 0x%X\n",NESOB.y);
     printf("SP: 0x%X\n",NESOB.sp);
     NESOB.Pbitbuffer = NESOB.pflag;
-    std::cout<<"pflag: "<<NESOB.Pbitbuffer<<std::endl;
+    #ifdef __linux__
+        std::cout<<"pflag: "<<NESOB.Pbitbuffer<<std::endl;
+    #endif
     printf("PC: 0x%X\n",NESOB.pc);
     return true;
 }
@@ -370,6 +392,10 @@ int NESmemWrite(uint8_t value, uint16_t location)
                     NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xA0] = value;
                     NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xC0] = value;
                     NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xE0] = value;
+                }
+                if(NESOB.VRAMaddress2 == 0x3F10) // Adding this here as a temp patch for SMB until I rewrite this mirroring code.
+                {
+                    NESOB.PPUmemory[0x3F00] = value;
                 }
                 if(NESOB.VRAMaddress2 >= 0x3F20 && NESOB.VRAMaddress2 < 0x3F40)
                 {

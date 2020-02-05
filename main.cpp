@@ -29,10 +29,13 @@ int main()
     pal = fopen("pal.pal", "rb");
     fread(pallete,192,1,pal);
     fclose(pal);
+    //printf("hmm\n");
     thread graphic (handleGraphicsBASIC);
+    //printf("hmm\n");
     thread input (handleSDLcontrol);
-    thread throttle (throttleCPUfunc);
-    throttle.detach();
+    //printf("hmm\n");
+    //thread throttle (throttleCPUfunc);
+    //throttle.detach();
     NESOB.opcode = NESOB.memory[NESOB.pc];
     while(NESOB.dontSetTrue == false) // Begin Loop
     {
@@ -44,6 +47,9 @@ int main()
         //cout<<newOpcode2<<endl;
         //printf("PC: 0x%X\n",NESOB.pc);
         doOpcode();
+        #ifdef _WIN32
+            handleControls();
+        #endif
         handleOther();
         handleInterrupts();
         handleScanlineStuff();
@@ -109,5 +115,11 @@ int main()
         }
 
     }
+    return 0;
+}
+
+int WinMain()
+{
+    main();
     return 0;
 }

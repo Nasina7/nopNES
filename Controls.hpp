@@ -84,6 +84,10 @@ int handleControlsr()
             controlBuffer[3] = 0;
         break;
 
+        case SDLK_LCTRL:
+            controlBuffer[3] = 0;
+        break;
+
         case SDLK_UP:
             controlBuffer[4] = 0;
         break;
@@ -117,12 +121,16 @@ int handleControls()
 
         case SDLK_o:
             tempBitBuffer = NESOB.memory[0x2000];
-            std::cout<<tempBitBuffer<<std::endl;
+            #ifdef __linux__
+                std::cout<<tempBitBuffer<<std::endl;
+            #endif
         break;
 
         case SDLK_i:
             tempBitBuffer = NESOB.memory[0x2002];
-            std::cout<<tempBitBuffer<<std::endl;
+            #ifdef __linux__
+                std::cout<<tempBitBuffer<<std::endl;
+            #endif
         break;
 
         case SDLK_LEFTBRACKET:
@@ -151,6 +159,11 @@ int handleControls()
 
         case SDLK_RETURN:
             controlBuffer[3] = 1;
+            printf("Return!");
+        break;
+
+        case SDLK_LCTRL:
+            controlBuffer[3] = 1;
         break;
 
         case SDLK_UP:
@@ -175,14 +188,17 @@ int handleControls()
 bool SDLinput;
 int handleSDLcontrol()
 {
+    #ifdef __linux__
     while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
         {
+            //printf("event?\n");
             if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
             {
                 NESOB.closeProgram = true;
             }
             if (SDL_EVENT_HANDLING.type == SDL_KEYDOWN) // If a key is being pressed, handle controls.
             {   // Handle Controls
+                //printf("KEYDOWN");
                 handleControls();
             }
             if (SDL_EVENT_HANDLING.type == SDL_KEYUP)
@@ -190,5 +206,22 @@ int handleSDLcontrol()
                 handleControlsr();
             }
         }
+    #endif // __linux__
+    #ifdef _WIN32
+        SDL_PollEvent( &SDL_EVENT_HANDLING);
+        if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
+            {
+                NESOB.closeProgram = true;
+            }
+            if (SDL_EVENT_HANDLING.type == SDL_KEYDOWN) // If a key is being pressed, handle controls.
+            {   // Handle Controls
+                printf("KEYDOWN");
+                handleControls();
+            }
+            if (SDL_EVENT_HANDLING.type == SDL_KEYUP)
+            {
+                handleControlsr();
+            }
+    #endif
     handleSDLcontrol();
 }

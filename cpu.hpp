@@ -155,6 +155,19 @@ int doOpcode()
             NESOB.cycles += 2;
         break;
 
+        case 0x0B:
+            printf("WARNING!  INVALID OPCODE 0x0B was ran!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.a = NESOB.a & NESOB.memory[NESOB.pc + 1];
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Pbitbuffer[0] = NESOB.Pbitbuffer[7];
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESOB.pc += 2;
+            NESOB.cycles += 2;
+        break;
+
         case 0x0C:
             printf("WARNING!  INVALID OPCODE 0x0C was ran!\n");
             NESOB.pc += 3;
@@ -429,6 +442,19 @@ int doOpcode()
             NESOB.cycles += 2;
         break;
 
+        case 0x2B:
+            printf("WARNING!  INVALID OPCODE 0x2B was ran!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.a = NESOB.a & NESOB.memory[NESOB.pc + 1];
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Pbitbuffer[0] = NESOB.Pbitbuffer[7];
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESOB.pc += 2;
+            NESOB.cycles += 2;
+        break;
+
         case 0x2C:
             NESOB.tempValue16 = NESmemRead(NESOB.pc + 2) << 8 | NESmemRead(NESOB.pc + 1);
             NESOB.tempValue = NESOB.a & NESmemRead(NESOB.tempValue16);
@@ -697,6 +723,23 @@ int doOpcode()
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc++;
+            NESOB.cycles += 2;
+        break;
+
+        case 0x4B:
+            printf("WARNING!  INVALID OPCODE 0x4B was ran!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.a = NESOB.a & NESOB.memory[NESOB.pc + 1];
+            NESOB.Abitbuffer = NESOB.a;
+            NESOB.Xbitbuffer[0] = NESOB.Abitbuffer[0];
+            NESOB.Abitbuffer = NESOB.Abitbuffer >> 1;
+            NESOB.a = NESOB.Abitbuffer.to_ulong();
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESOB.pc += 2;
             NESOB.cycles += 2;
         break;
 
@@ -983,6 +1026,24 @@ int doOpcode()
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 1;
             NESOB.cycles += 5;
+        break;
+
+        case 0x6B:
+            printf("WARNING!  INVALID OPCODE 0x6B was ran!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.a = NESOB.a & NESOB.memory[NESOB.pc + 1];
+            NESOB.Abitbuffer = NESOB.a;
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Xbitbuffer[0] = NESOB.Pbitbuffer[0];
+            NESOB.Pbitbuffer[0] = NESOB.Abitbuffer[0];
+            NESOB.Abitbuffer = NESOB.Abitbuffer >> 1;
+            NESOB.Abitbuffer[7] = NESOB.Xbitbuffer[0];
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESOB.a = NESOB.Abitbuffer.to_ulong();
+            handleFlags7(NESOB.a, NESOB.prevValue);
+            handleFlags1(NESOB.a, NESOB.prevValue);
+            NESOB.pc += 2;
+            NESOB.cycles += 2;
         break;
 
         case 0x6C:
@@ -1294,6 +1355,17 @@ int doOpcode()
             NESOB.cycles += 2;
         break;
 
+        case 0x8B:
+            printf("WARNING!  INVALID OPCODE 0x8B WAS RUN!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.a = NESOB.x;
+            NESOB.a & NESmemRead(NESOB.pc + 1);
+            handleFlags7(NESOB.a, NESOB.prevValue);
+            handleFlags1(NESOB.a, NESOB.prevValue);
+            NESOB.pc += 2;
+            NESOB.cycles += 2;
+        break;
+
         case 0x8C:
             NESOB.tempValue16 = NESmemRead(NESOB.pc + 2) << 8 | NESmemRead(NESOB.pc + 1);
             NESmemWrite(NESOB.y,NESOB.tempValue16);
@@ -1493,6 +1565,23 @@ int doOpcode()
             handleFlags7(NESOB.x, NESOB.prevValue);
             handleFlags1(NESOB.x, NESOB.prevValue);
             NESOB.pc++;
+            NESOB.cycles += 2;
+        break;
+
+        case 0xAB:
+            printf("WARNING!  INVALID OPCODE 0xAB was ran!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.Abitbuffer = NESOB.a;
+            NESOB.Xbitbuffer[0] = NESOB.Abitbuffer[0];
+            NESOB.Abitbuffer = NESOB.Abitbuffer >> 1;
+            NESOB.a = NESOB.Abitbuffer.to_ulong();
+            NESOB.a = NESOB.a & NESOB.memory[NESOB.pc + 1];
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
+            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESOB.pc += 2;
             NESOB.cycles += 2;
         break;
 
@@ -1753,6 +1842,18 @@ int doOpcode()
             handleFlags7(NESOB.x,NESOB.prevValue);
             handleFlags1(NESOB.x,NESOB.prevValue);
             NESOB.pc += 1;
+            NESOB.cycles += 2;
+        break;
+
+        case 0xCB:
+            printf("WARNING! INVALID OPCODE 0xCB WAS RAN!\n");
+            NESOB.prevValue = NESOB.x;
+            NESOB.x = NESOB.a & NESOB.x;
+            NESOB.x -= NESmemRead(NESOB.pc + 1);
+            handleFlags7(NESOB.x, NESOB.prevValue);
+            handleFlags1(NESOB.x, NESOB.prevValue);
+            handleFlags0(NESOB.prevValue, NESmemRead(NESOB.pc + 1));
+            NESOB.pc += 2;
             NESOB.cycles += 2;
         break;
 

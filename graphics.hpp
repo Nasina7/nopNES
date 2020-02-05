@@ -1,7 +1,7 @@
 #include "include.hpp"
 uint8_t bitcount;
 SDL_Texture* texture = NULL;
-SDL_Rect* mainScreen;
+SDL_Rect mainScreen;
 std::bitset<8> graphicline;
 std::bitset<8> graphicline2;
 std::bitset<8> graphiclineS;
@@ -220,9 +220,9 @@ void chooseRenderColorSprite(uint8_t spritePal)
         SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
 }
-uint64_t curPixx;
-uint64_t curPixy;
-uint32_t pixels[256 * 256];
+uint16_t curPixx;
+uint16_t curPixy;
+uint32_t pixels[512 * 512];
 std::bitset<8> flipBitBuffer;
 int8_t helpXflip;
 uint8_t extramanipX;
@@ -316,16 +316,27 @@ int handleSprites()
 int blitsu = 1024;
 uint8_t xpixsc;
 uint8_t ypixsc;
+int handleGraphics2000()
+{
+
+}
+uint8_t ppurendercount;
+uint16_t nametableAddr2;
+uint16_t plusAmount;
 int handleGraphicsBASIC()
 {
     //printf("Frame\n");
     //handleSprites();
     //currentPPUFrame++;
+    ppurendercount = 2;
+    nametableAddr2 = 0x2000;
+    while(ppurendercount != 0)
+    {
     uint8_t Xcounter = 32;
     uint8_t Ycounter = 32;
     //return 0;
     bitcount = 7;
-    tiledatalocation1 = nametableAddr;
+    tiledatalocation1 = nametableAddr2;
     tilelocation = NESOB.PPUmemory[tiledatalocation1];
     //tilelocation++;
     tilecount = tilelocation << 4;
@@ -356,9 +367,10 @@ int handleGraphicsBASIC()
                     {
                         ypixsc = ypix;
                     }
-                    curPixx = xpix;
-                    curPixy = (ypix) * 256;
+                    curPixx = (xpix - scrollx);
+                    curPixy = (ypix - scrolly) * 256;
                     curPixx = curPixx + curPixy;
+                    //curPixx = curPixx + plusAmount;
                     if (palResult == 0)
                     {
                         pixels[curPixx] = pal00[0] << 24 | pal00[1] << 16 | pal00[2] << 8 | pal00[3];
@@ -421,8 +433,15 @@ int handleGraphicsBASIC()
         ypix = (ypixtile * 8);
         xpix = (xpixtile * 8);
     }
-    SDL_UpdateTexture(texture, mainScreen, pixels, blitsu);
+        ppurendercount--;
+        nametableAddr2 = 0x2000;
+        plusAmount = 256;
+    }
+    SDL_UpdateTexture(texture, NULL, pixels, blitsu);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
+    mainScreen.w = 256;
+    mainScreen.h = 256;
+    //SDL_RenderDrawRect(renderer, &mainScreen);
     handleSprites();
     SDL_RenderPresent(renderer);
     //printf("ScrollX: 0x%X\n",scrollx);
@@ -528,7 +547,7 @@ int handleGraphicsBASICSCAN()
                 tilecount += 0x1000;
             }
         }
-    SDL_UpdateTexture(texture, mainScreen, pixels, blitsu);
+    SDL_UpdateTexture(texture, NULL, pixels, blitsu);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     handleSprites();
     SDL_RenderPresent(renderer);
