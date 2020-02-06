@@ -205,5 +205,7 @@ int handleSDLcontrol()
                 handleControlsr();
             }
         }
-    handleSDLcontrol();
+        #ifdef __linux__
+            handleSDLcontrol();
+        #endif // __linux__
 }

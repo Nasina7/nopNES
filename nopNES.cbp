@@ -41,13 +41,17 @@
 				<Compiler>
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-m32" />
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/include" />
 					<Add directory="/usr/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
+					<Add option="-m32" />
 					<Add option="-lSDL2" />
 					<Add option="-pthread" />
 					<Add option="-lmingw32" />
+					<Add option="-static-libgcc" />
+					<Add option="-static-libstdc++" />
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/lib" />
 					<Add directory="/usr/i686-w64-mingw32/lib" />
 				</Linker>

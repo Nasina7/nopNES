@@ -2,7 +2,7 @@
 using namespace std;
 int main()
 {
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0)
+    if( SDL_Init( SDL_INIT_EVERYTHING ) < 0)
     {
         printf("SDL2 was Unable to Initialize!");
         return 1;
@@ -32,7 +32,9 @@ int main()
     //printf("hmm\n");
     thread graphic (handleGraphicsBASIC);
     //printf("hmm\n");
-    thread input (handleSDLcontrol);
+    #ifdef __linux__
+        thread input (handleSDLcontrol);
+    #endif // __linux__
     //printf("hmm\n");
     //thread throttle (throttleCPUfunc);
     //throttle.detach();
@@ -47,9 +49,6 @@ int main()
         //cout<<newOpcode2<<endl;
         //printf("PC: 0x%X\n",NESOB.pc);
         doOpcode();
-        #ifdef _WIN32
-            handleControls();
-        #endif
         handleOther();
         handleInterrupts();
         handleScanlineStuff();
@@ -105,6 +104,9 @@ int main()
         if((((NESOB.cycles % 29780) >= 0) && ((NESOB.cycles % 29780) <= 6)) )
         {
             SDL_Delay(6);
+            #ifdef _WIN32
+                handleSDLcontrol();
+            #endif // _WIN32
             //throttleCPU = true;
             //while(doneThrottle == false)
             //{

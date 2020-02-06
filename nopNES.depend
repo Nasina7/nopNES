@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1580939288 source:/home/zach/codeblocks/nopNES/main.cpp
+1581003448 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
 1580835374 /home/zach/codeblocks/nopNES/cpu.hpp
@@ -15,7 +15,7 @@
 	<unordered_map>
 	<unistd.h>
 
-1580941092 /home/zach/codeblocks/nopNES/Controls.hpp
+1581003134 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
 1580925037 /home/zach/codeblocks/nopNES/graphics.hpp
