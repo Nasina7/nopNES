@@ -16,13 +16,31 @@ int main()
         SDL_TEXTUREACCESS_STREAMING,
         256, 240
     );
-
+    texture2400 = SDL_CreateTexture
+    (
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        256, 240
+    );
     SDL_RenderSetScale(renderer,2,2);
     if(beginning() == false)
     {
         printf("ERROR!\n");
         return 0;
     }
+    //printf("Would you like to run the graphics on a seperate thread? (This will increase speed at the expense of accuracy.)\n");
+    //cin>>options;
+    //if(options == 'y')
+    //{
+        graphicThread = false;
+        //printf("THIS IS CURRENTLY BROKEN!\n SWITCHING TO DEFAULT...\n");
+    //}
+    //if(options == 'n')
+    //{
+       // graphicThread = false;
+    //}
+    //cout<<graphicThread<<endl;
     currentFrame = 0;
     nesPowerOn();
     NESOB.scanline = 0;
@@ -30,7 +48,10 @@ int main()
     fread(pallete,192,1,pal);
     fclose(pal);
     //printf("hmm\n");
-    thread graphic (handleGraphicsBASIC);
+    //if(graphicThread == true)
+    //{
+        //thread graphic (handleGraphicsBASIC);
+    //}
     //printf("hmm\n");
     #ifdef __linux__
         thread input (handleSDLcontrol);
@@ -38,24 +59,33 @@ int main()
     //printf("hmm\n");
     //thread throttle (throttleCPUfunc);
     //throttle.detach();
+    fpsBenchmark();
     NESOB.opcode = NESOB.memory[NESOB.pc];
+    //NESOB.memory[0x0067] = 0xFF;
+    uint64_t prevCycles;
+    uint16_t prevScanline;
     while(NESOB.dontSetTrue == false) // Begin Loop
     {
-    //SDLinput = true;
+        //breakpoint = true;
+        //SDLinput = true;
+        //breakpoint = true;
+        prevScanline = NESOB.scanline;
         throttleCPU = true;
         NESOB.opcode = NESOB.memory[NESOB.pc];
         prevScanlineTimer = NESOB.cycles % cycleModulo;
         //printf("Opcode: 0x%X\n",NESOB.opcode);
         //cout<<newOpcode2<<endl;
         //printf("PC: 0x%X\n",NESOB.pc);
+        prevCycles = NESOB.cycles;
         doOpcode();
         handleOther();
         handleInterrupts();
         handleScanlineStuff();
+        //breakpoint = true;
         //printRegs();
         //handleLog();
         //printRegs();
-        if(NESOB.pc == 0xE32D)
+        if(NESOB.pc == 0x03A2 && NESOB.a == 0x00 && NESOB.x == 0x01 && NESOB.y == 0x02)
         {
             //printf("Scanline: 0x%i\n",NESOB.scanline);
             //breakpoint = true;
@@ -66,6 +96,7 @@ int main()
         }
         if(breakpoint == true)
         {
+            //printf("MMC1: %i\n",MMC1counter);
             printRegs();
             printf("Continue?\n");
             cin>>options;
@@ -101,9 +132,20 @@ int main()
             //fclose (logfile);
             return 0;
         }
-        if((((NESOB.cycles % 29780) >= 0) && ((NESOB.cycles % 29780) <= 6)) )
+        if(prevScanline < NESOB.scanline)
         {
-            SDL_Delay(6);
+            //handleGraphicsBASICSCAN();
+        }
+        if( (prevCycles % 29780) > (NESOB.cycles % 29780) )
+        {
+            if(graphicThread == false)
+            {
+                handleGraphicsBASIC();
+            }
+            if(graphicThread == true)
+            {
+                SDL_Delay(6);
+            }
             #ifdef _WIN32
                 handleSDLcontrol();
             #endif // _WIN32

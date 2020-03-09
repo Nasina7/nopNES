@@ -92,61 +92,6 @@ SDL_Renderer* renderer;
 SDL_Event SDL_EVENT_HANDLING;
 int option2;
 using namespace std;
-bool beginning()
-{
-    #ifdef _WIN32
-        printf("WARNING!  You are using a windows build of nopNES!\nWindows Builds are experimental and thus may have bugs!\n");
-    #endif // _WIN32
-    //cout<<"Welcome to nopNES!"<<endl<<"Rom Name: ";
-    printf("Welcome to nopNES!\nRom Name: ");
-    cin>>NESOB.filename;
-    FILE* headerf = fopen(NESOB.filename, "rb");
-    if(headerf == NULL)
-    {
-        return false;
-    }
-    fread(NESOB.header,0x10,1,headerf);
-    fclose(headerf);
-    NESOB.prgsize = NESOB.header[0x04] * 16384;
-    printf("PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
-    if(NESOB.prgsize > 0x8000)
-    {
-        printf("ROM SIZE IS TO LARGE!\nTHIS ROM SIZE IS NOT SUPPORTED.\n");
-        return false;
-    }
-    NESOB.chrsize = NESOB.header[0x05] * 8192;
-    printf("CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
-    //printf("testing\n");
-    FILE* rom = fopen(NESOB.filename, "rb");
-    //printf("testing\n");
-    fseek(rom,0x10,SEEK_SET);
-    //printf("testing\n");
-    fread(NESOB.memory + 0x8000,NESOB.prgsize,1,rom);
-    //printf("testing\n");
-    if(NESOB.prgsize != 0x8000)
-    {
-        rewind(rom);
-        fseek(rom,0x10,SEEK_SET);
-        fread(NESOB.memory + 0xC000,NESOB.prgsize,1,rom);
-    }
-    //printf("testing\n");
-    fseek(rom,NESOB.prgsize + 0x10,SEEK_SET);
-    //printf("testing\n");
-    fread(NESOB.PPUmemory, 0x2000, 1, rom);
-    //printf("testing\n");
-    fclose(rom);
-    //printf("testing\n");
-    #ifdef __linux__
-        FILE* mem_dump = fopen ("log/memdump", "w+");
-        fwrite (NESOB.memory , sizeof(char), sizeof(NESOB.memory), mem_dump);
-        fclose (mem_dump);
-        //printf("testingggggg\n");
-    #endif
-    //printf("testingg\n");
-    //cin>>option2;
-    return true;
-}
-
 int printRegs()
 {
     printf("Opcode: 0x%X\n",NESOB.opcode);
@@ -245,6 +190,74 @@ void throttleCPUfunc()
 
 
 }
+uint32_t switchLocation;
+uint16_t helpLocation;
+std::bitset<4> mapperBit;
+std::bitset<4> mapperBit2;
+FILE* rom = NULL;
+int bankSwitch32k(uint8_t value)
+{
+    switchLocation = value * 0x8000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + 0x8000,0x8000,1,rom);
+    fclose(rom);
+    return true;
+}
+int bankSwitch16k(uint8_t value)
+{
+    switchLocation = value * 0x4000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + 0x8000,0x4000,1,rom); // Load first bank into 0x8000 to 0xBFFF
+    fclose(rom);
+    return true;
+}
+int bankSwitch16k2(uint8_t value)
+{
+    switchLocation = value * 0x4000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + 0xC000,0x4000,1,rom); // Load first bank into 0xC000 to 0xFFFF
+    fclose(rom);
+    return true;
+}
+int fixLastBank()
+{
+    switchLocation = (NESOB.prgsize) - 0x4000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + 0xC000,0x4000,1,rom); // Load first bank into 0xC000 to 0xFFFF
+    fclose(rom);
+    return true;
+}
+int CHRbankSwitch4k(uint8_t value)
+{
+    switchLocation = (value * 0x1000) + NESOB.prgsize;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.PPUmemory + 0x0000,0x1000,1,rom);
+    fclose(rom);
+    return true;
+}
+int CHRbankSwitch8k(uint8_t value)
+{
+    switchLocation = (value * 0x2000) + NESOB.prgsize;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.PPUmemory + 0x0000,0x2000,1,rom);
+    fclose(rom);
+    return true;
+}
+int CHRbankSwitch4khigh(uint8_t value)
+{
+    switchLocation = (value * 0x1000) + NESOB.prgsize;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.PPUmemory + 0x1000,0x1000,1,rom);
+    fclose(rom);
+    return true;
+}
 int handleScanlineStuff()
 {
         if(NESOB.scanline == 241 && renderThrottle == false)
@@ -288,6 +301,7 @@ int handleScanlineStuff()
 }
 uint64_t curFPS;
 uint64_t endFPS;
+char windowTitle[30];
 int doBenchmark()
 {
     beginBenchmark = true;
@@ -298,18 +312,17 @@ int doBenchmark()
     currentFpsonEnd = currentFrame;
     endFPS = endFPS - curFPS;
     currentFpsonEnd = currentFpsonEnd - currentFpsonStart;
-    printf("Acomplished %i CPU FPS in the time it should take to do 60 CPU FPS!\n", currentFpsonEnd);
-    printf("Acomplished %i PPU FPS in the time it should take to do 60 PPU FPS!\n", endFPS);
+    //printf("Acomplished %i CPU FPS in the time it should take to do 60 CPU FPS!\n", currentFpsonEnd);
+    //printf("Acomplished %i PPU FPS in the time it should take to do 60 PPU FPS!\n", endFPS);
+    sprintf(windowTitle, "nopNES (Alpha) FPS: %i", currentFpsonEnd);
+    SDL_SetWindowTitle(nopNESwindow, windowTitle);
     beginBenchmark = false;
-    return 0;
+    doBenchmark();
 }
 void fpsBenchmark()
 {
-    if(beginBenchmark == false)
-    {
         std::thread benchmark(doBenchmark);
         benchmark.detach();
-    }
 }
 
 std::bitset<2> controlerpoll;
@@ -335,11 +348,170 @@ int indirectYget()
     NESOB.tempValue162 = NESOB.tempValue162 + NESOB.y;
     return NESOB.tempValue162;
 }
+bool graphicThread;
 uint8_t oamAddr;
 uint8_t oamDMA;
 uint16_t oamCounter;
 uint16_t oamDMAlocate;
 uint8_t bitcountS;
+uint8_t mapper;
+uint8_t shiftReg;
+std::bitset<8> MMC1help1;
+std::bitset<8> MMC1help2;
+uint8_t MMC1counter = 0xFF;
+uint8_t MMC1prgmode = 3;
+bool CHRbankmode = false;
+uint8_t prgSwitch;
+std::bitset<8> helpmapBitBuffer;
+bool handleRomWrite(uint8_t value, uint16_t location)
+{
+    switch(mapper)
+    {
+        case 0x00:
+            return false;
+        break;
+
+        case 0x01:
+            MMC1help1 = value;
+            if(value >= 0x80)
+            {
+                MMC1counter = 0xFF;
+                //printf("RESETCOUNT!\n");
+            }
+            if(value < 0x80)
+            {
+                MMC1counter++;
+            }
+            MMC1help2 = shiftReg;
+            MMC1help2[MMC1counter] = MMC1help1[0];
+            //printf("MMC1count: 0x%X\n",MMC1counter);
+            if(MMC1counter == 4)
+            {
+                MMC1counter = 0xFF;
+                //printf("ShiftReg: 0x%X\n",shiftReg);
+                //printf("Location: 0x%X\n",location);
+                if(location >= 0x8000 && location <= 0x9FFF)
+                {
+                    MMC1help1 = shiftReg;
+                    if(MMC1help1[3] == 0 && MMC1help1[2] == 0)
+                    {
+                        MMC1prgmode = 0;
+                    }
+                    if(MMC1help1[3] == 0 && MMC1help1[2] == 1)
+                    {
+                        MMC1prgmode = 1;
+                    }
+                    if(MMC1help1[3] == 1 && MMC1help1[2] == 0)
+                    {
+                        MMC1prgmode = 2;
+                    }
+                    if(MMC1help1[3] == 1 && MMC1help1[2] == 1)
+                    {
+                        MMC1prgmode = 3;
+                    }
+                    CHRbankmode = MMC1help1[4];
+                }
+                if(location >= 0xA000 && location <= 0xBFFF)
+                {
+                    if(CHRbankmode == true)
+                    {
+                        CHRbankSwitch4k(shiftReg);
+                    }
+                    if(CHRbankmode == false)
+                    {
+                        MMC1help2 = shiftReg;
+                        MMC1help2[0] = 0;
+                        shiftReg = MMC1help2.to_ulong();
+                        CHRbankSwitch8k(shiftReg);
+                    }
+                }
+                if(location >= 0xC000 && location <= 0xDFFF)
+                {
+                    if(CHRbankmode == true)
+                    {
+                        CHRbankSwitch4khigh(shiftReg);
+                    }
+                    if(CHRbankmode == false)
+                    {
+                        //CHRbankSwitch8k(shiftReg);
+                    }
+                }
+                if(location >= 0xE000 && location <= 0xFFFF)
+                {
+                    MMC1help1 = shiftReg;
+                    MMC1help1[4] = 0;
+                    if(MMC1prgmode == 0 || MMC1prgmode == 1)
+                    {
+                        MMC1help1[0] = 0;
+                        MMC1help1 = MMC1help1 >> 1;
+                        printf("testing\n");
+                        prgSwitch = MMC1help1.to_ulong();
+                        bankSwitch32k(prgSwitch);
+                    }
+                    if(MMC1prgmode == 2)
+                    {
+                        prgSwitch = MMC1help1.to_ulong();
+                        bankSwitch16k(0x00);
+                        bankSwitch16k2(prgSwitch);
+                    }
+                    if(MMC1prgmode == 3)
+                    {
+                        prgSwitch = MMC1help1.to_ulong();
+                        bankSwitch16k(prgSwitch);
+                        fixLastBank();
+                    }
+                }
+            }
+            shiftReg = MMC1help2.to_ulong();
+        break;
+
+        case 0x02:
+            bankSwitch16k(value);
+        break;
+
+        case 0x42:
+            helpmapBitBuffer = value;
+            if(helpmapBitBuffer[5] == 0 && helpmapBitBuffer[4] == 0)
+            {
+                bankSwitch32k(0);
+            }
+            if(helpmapBitBuffer[5] == 0 && helpmapBitBuffer[4] == 1)
+            {
+                bankSwitch32k(1);
+            }
+            if(helpmapBitBuffer[5] == 1 && helpmapBitBuffer[4] == 0)
+            {
+                bankSwitch32k(2);
+            }
+            if(helpmapBitBuffer[5] == 1 && helpmapBitBuffer[4] == 1)
+            {
+                bankSwitch32k(3);
+            }
+
+            if(helpmapBitBuffer[1] == 0 && helpmapBitBuffer[0] == 0)
+            {
+                CHRbankSwitch8k(0);
+            }
+            if(helpmapBitBuffer[1] == 0 && helpmapBitBuffer[0] == 1)
+            {
+                CHRbankSwitch8k(1);
+            }
+            if(helpmapBitBuffer[1] == 1 && helpmapBitBuffer[0] == 0)
+            {
+                CHRbankSwitch8k(2);
+            }
+            if(helpmapBitBuffer[1] == 1 && helpmapBitBuffer[0] == 1)
+            {
+                CHRbankSwitch8k(3);
+            }
+        break;
+
+        default:
+            return false;
+        break;
+    }
+}
+
 int NESmemWrite(uint8_t value, uint16_t location)
 {
     //printf("location: 0x%X\n",location);
@@ -472,6 +644,10 @@ int NESmemWrite(uint8_t value, uint16_t location)
                     NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
                     NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
                 }
+                if(value == 0x55 && location == 0x23C9)
+                {
+                    //breakpoint = true;
+                }
                 NESOB.PPUmemory[NESOB.VRAMaddress2] = value;
                 NESOB.Xbitbuffer = NESOB.memory[0x2000];
                 if(NESOB.Xbitbuffer[2] == 0)
@@ -524,8 +700,7 @@ int NESmemWrite(uint8_t value, uint16_t location)
         break;
 
         case 0x2007:
-            if(NESOB.VRAMaddress2 <= 0x3FFF)
-            {
+                NESOB.VRAMaddress2 = NESOB.VRAMaddress2 % 0x4000;
                 if(NESOB.VRAMaddress2 >= 0x3F00 && NESOB.VRAMaddress2 < 0x3F20)
                 {
                     NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
@@ -616,7 +791,6 @@ int NESmemWrite(uint8_t value, uint16_t location)
                 {
                     NESOB.VRAMaddress2 += 0x20;
                 }
-            }
         break;
         default:
 
@@ -655,6 +829,8 @@ int NESmemWrite(uint8_t value, uint16_t location)
         break;
 
         case 0x8000 ... 0xFFFF:
+            //printf("Write to ROM!\nValue: 0x%X\n",value);
+            handleRomWrite(value,location);
             return false;
         break;
 
@@ -674,6 +850,7 @@ int NESmemWrite(uint8_t value, uint16_t location)
 }
 uint8_t controllercount;
 std::bitset<8> resultcontrol;
+uint16_t getVal;
 uint8_t NESmemRead(uint16_t location)
 {
     switch(location)
@@ -688,16 +865,19 @@ uint8_t NESmemRead(uint16_t location)
         break;
 
         case 0x2007:
-            /*
-            if(NESOB.PPUwritecounter == 0)
-            {
-                NESOB.PPUwritecounter = 1;
-            }
-            if(NESOB.PPUwritecounter == 1)
-            {
-                NESOB.PPUwritecounter = 0;
-            }
-            */
+                getVal = NESOB.VRAMaddress2 % 0x4000;
+                NESOB.Xbitbuffer = NESOB.memory[0x2000];
+                if(NESOB.Xbitbuffer[2] == 0)
+                {
+                    NESOB.VRAMaddress2++;
+                }
+                if(NESOB.Xbitbuffer[2] == 1)
+                {
+                    NESOB.VRAMaddress2 += 0x20;
+                }
+                NESOB.memory[0x2007] = NESOB.PPUmemory[getVal];
+                //printf("getVal: 0x%X\n",NESOB.PPUmemory[getVal]);
+                return NESOB.PPUmemory[getVal];
         break;
 
         case 0x2008 ... 0x3FFF:
@@ -845,6 +1025,7 @@ std::bitset<8> tempBitBuffer;
 std::bitset<8> tempBitBuffer2;
 bool bgpattable;
 bool dontDouble;
+uint8_t nametableuse;
 void handleOther()
 {
     tempBitBuffer = NESOB.memory[0x2000];
@@ -854,7 +1035,8 @@ void handleOther()
     tempBitBuffer2[2] = tempBitBuffer[2];
     tempBitBuffer2[1] = tempBitBuffer[1];
     tempBitBuffer2[0] = tempBitBuffer[0];
-    dontDouble = false;
+    //dontDouble = false;
+    /*
     if(tempBitBuffer2[6] == 0 && dontDouble == false)
     {
         tempBitBuffer2[6] = 1;
@@ -865,24 +1047,35 @@ void handleOther()
         tempBitBuffer2[6] = 0;
         dontDouble = true;
     }
-    dontDouble = false;
+    */
+    //dontDouble = false;
+    tempBitBuffer2[6] = 0;
+    if(NESOB.scanline == OAMmem[0])
+    {
+        tempBitBuffer2[6] = 1;
+    }
+
     NESOB.memory[0x2002] = tempBitBuffer2.to_ulong();
     tempBitBuffer = NESOB.memory[0x2000];
     if(tempBitBuffer[0] == 0 && tempBitBuffer[1] == 0)
     {
         nametableAddr = 0x2000;
+        nametableuse = 0;
     }
     if(tempBitBuffer[0] == 1 && tempBitBuffer[1] == 0)
     {
         nametableAddr = 0x2400;
+        nametableuse = 1;
     }
     if(tempBitBuffer[0] == 0 && tempBitBuffer[1] == 1)
     {
         nametableAddr = 0x2800;
+        nametableuse = 2;
     }
     if(tempBitBuffer[0] == 1 && tempBitBuffer[1] == 1)
     {
         nametableAddr = 0x2C00;
+        nametableuse = 3;
     }
     if(tempBitBuffer[4] == 0)
     {
@@ -893,13 +1086,13 @@ void handleOther()
         bgpattable = true;
     }
 }
-//FILE* logfile = fopen ("log/logdump", "w+");
-void handleLog()
+FILE* logfile = fopen ("log/logdump", "w+");
+int handleLog()
 {
-   // if(logfile == NULL)
-    //{
+    if(logfile == NULL)
+    {
         //printf("fuck\n");
-        //return 1;
-    //}
-    //fprintf(logfile, "%X                                            A:%X X:%X Y:%X P:%X SP:%X \n", NESOB.pc, NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
+        return 1;
+    }
+    fprintf(logfile, "%X                                            A:%X X:%X Y:%X P:%X SP:%X \n", NESOB.pc, NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
 }

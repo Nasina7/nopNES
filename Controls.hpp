@@ -1,12 +1,22 @@
 #include "graphics.hpp"
+uint8_t throttleCPUval = 6;
 int handleControlsr()
 {
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
 
-        case SDLK_3:
-            cin>>blitsu;
-        break;
+        //case SDLK_2:
+            //printf("0x%X\n",currentGridat);
+        //break;
+
+        //case SDLK_3:
+            //cin>>blitsu;
+        //break;
+
+       // case SDLK_4:
+            //printf("Change throttle value to?  Default is 6\n");
+            //cin>>throttleCPUval;
+        //break;
 
         case SDLK_INSERT:
             printf("Change Cycle Modulo too: ");
@@ -26,10 +36,10 @@ int handleControlsr()
         break;
 
         case SDLK_b:
-            fpsBenchmark();
+            //fpsBenchmark();
         break;
 
-        case SDLK_r:
+        case SDLK_r: // Resets the emulation (can cause bugs)
             NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC]; // Sets Initial PC Value
             NESOB.pflag = 0x34;
             NESOB.sp = 0xFD;
@@ -39,16 +49,8 @@ int handleControlsr()
             currentFrame = 0;
         break;
 
-        case SDLK_1:
-            NESOB.pc = 0xC000; // Sets Initial PC Value
-            NESOB.pflag = 0x34;
-            NESOB.sp = 0xFD;
-            NESOB.a = 0x00;
-            NESOB.x = 0x00;
-            NESOB.y = 0x00;
-            currentFrame = 0;
-        break;
-
+        //This was originally a way to reset the program, but it didn't work well and caused bugs.
+        /*
         case SDLK_0:
             if(beginning() == false)
             {
@@ -67,7 +69,7 @@ int handleControlsr()
             fclose(pal);
             currentFrame = 0;
         break;
-
+        */
         case SDLK_z:
             controlBuffer[1] = 0;
         break;
@@ -159,7 +161,7 @@ int handleControls()
 
         case SDLK_RETURN:
             controlBuffer[3] = 1;
-            printf("Return!");
+            //printf("Return!");
         break;
 
         case SDLK_LCTRL:
