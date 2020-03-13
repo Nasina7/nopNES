@@ -1,5 +1,5 @@
 #include "graphics.hpp"
-uint8_t throttleCPUval = 6;
+int throttleCPUval = 0;
 int handleControlsr()
 {
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
@@ -13,26 +13,26 @@ int handleControlsr()
             //cin>>blitsu;
         //break;
 
-       // case SDLK_4:
-            //printf("Change throttle value to?  Default is 6\n");
-            //cin>>throttleCPUval;
-        //break;
+        case SDLK_q:
+            printf("Increase this number to slow down the Emulator.\nCurrent Value: %i\nDefault is 0\nChange throttle value to: ",throttleCPUval);
+            cin>>throttleCPUval;
+        break;
 
-        case SDLK_INSERT:
-            printf("Change Cycle Modulo too: ");
+        case SDLK_w:
+            printf("This will overclock or underclock the emulated cpu.\nDefault is 113\nCurrent Value: %i\nChange Cycle Modulo too: ",cycleModulo);
             cin>>cycleModulo;
         break;
 
         case SDLK_LEFTBRACKET:
-            showTile = false;
+            //showTile = false;
         break;
 
         case SDLK_RIGHTBRACKET:
-            showBlock = false;
+            //showBlock = false;
         break;
 
         case SDLK_BACKSLASH:
-            showGrid = false;
+            //showGrid = false;
         break;
 
         case SDLK_b:
@@ -120,7 +120,7 @@ int handleControls()
         case SDLK_p:
             printRegs();
         break;
-
+        /*
         case SDLK_o:
             tempBitBuffer = NESOB.memory[0x2000];
             #ifdef __linux__
@@ -146,7 +146,7 @@ int handleControls()
         case SDLK_BACKSLASH:
             showGrid = true;
         break;
-
+        */
         case SDLK_z:
             controlBuffer[1] = 1;
         break;
@@ -207,7 +207,7 @@ int handleSDLcontrol()
                 handleControlsr();
             }
         }
-        #ifdef __linux__
-            handleSDLcontrol();
-        #endif // __linux__
+        //#ifdef __linux__
+            //handleSDLcontrol();
+        //#endif // __linux__
 }

@@ -1,4 +1,4 @@
-#include "include.hpp"
+#include "sound.hpp"
 bool handleRomLoad()
 {
     switch (mapper)
@@ -83,6 +83,54 @@ bool handleRomLoad()
             fclose(rom);
         break;
 
+        case 0x03:
+            printf("WARNING!  MAPPER 3 SUPPORT IS EXPERIMENTAL!\n");
+            NESOB.prgsize = NESOB.header[0x04] * 16384;
+            printf("DEBUG: PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
+            NESOB.chrsize = NESOB.header[0x05] * 8192;
+            printf("DEBUG: CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
+
+            rom = fopen(NESOB.filename, "rb");
+
+            fseek(rom,0x10,SEEK_SET);
+
+            fread(NESOB.memory + 0x8000,0x4000,1,rom); // Load first bank into 0x8000 to 0xBFFF
+            //printf("testing\n");
+            rewind(rom);
+            fseek(rom,(0x10 + NESOB.prgsize - 0x4000),SEEK_SET);
+            fread(NESOB.memory + 0xC000,0x4000,1,rom);
+            //printf("testing\n");
+            fseek(rom,NESOB.prgsize + 0x6010,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.PPUmemory, 0x2000, 1, rom);
+            //printf("testing\n");
+            fclose(rom);
+        break;
+
+        case 0x04:
+            printf("WARNING!  MAPPER 4 SUPPORT IS VERY EXPERIMENTAL AND NOT FINISHED!\n");
+            NESOB.prgsize = NESOB.header[0x04] * 16384;
+            printf("DEBUG: PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
+            NESOB.chrsize = NESOB.header[0x05] * 8192;
+            printf("DEBUG: CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
+
+            rom = fopen(NESOB.filename, "rb");
+
+            fseek(rom,0x10,SEEK_SET);
+
+            fread(NESOB.memory + 0x8000,0x4000,1,rom); // Load first bank into 0x8000 to 0xBFFF
+            //printf("testing\n");
+            rewind(rom);
+            fseek(rom,(0x10 + NESOB.prgsize - 0x4000),SEEK_SET);
+            fread(NESOB.memory + 0xC000,0x4000,1,rom);
+            //printf("testing\n");
+            fseek(rom,NESOB.prgsize + 0x10,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.PPUmemory, 0x2000, 1, rom);
+            //printf("testing\n");
+            fclose(rom);
+        break;
+
         case 0x42:
             printf("WARNING!  MAPPER 66 SUPPORT IS EXPERIMENTAL!\n");
             NESOB.prgsize = NESOB.header[0x04] * 16384;
@@ -117,12 +165,14 @@ bool handleRomLoad()
         break;
 
         default:
-            printf("ERROR: MAPPER IS NOT SUPPORTED!\n");
-            printf("Continue Anyway?\n");
+            printf("ERROR: MAPPER %i IS NOT SUPPORTED!\n",mapper);
+            printf("Would you like to use a different mapper?\n");
             cin>>options;
             if(options == 'y')
             {
-                mapper = 0x01;
+                printf("Please enter a different mapper: ");
+                cin>>mapper;
+                mapper = mapper - 48; // IDK why this needs to be here.
                 handleRomLoad();
             }
             if(options == 'n')

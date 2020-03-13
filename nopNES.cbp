@@ -73,6 +73,7 @@
 		<Unit filename="include.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="mappers.hpp" />
+		<Unit filename="sound.hpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

@@ -9,6 +9,9 @@ int main()
     }
     nopNESwindow = SDL_CreateWindow("nopNES Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
+
+    //nopNESwindowDEBUG = SDL_CreateWindow("Pallete", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0xF * 8, 0x1F * 8, SDL_WINDOW_RESIZABLE);
+    //rendererDEBUG = SDL_CreateRenderer(nopNESwindowDEBUG, -1, SDL_RENDERER_ACCELERATED);
     texture = SDL_CreateTexture
     (
         renderer,
@@ -24,10 +27,11 @@ int main()
         256, 240
     );
     SDL_RenderSetScale(renderer,2,2);
+    //SDL_RenderSetScale(rendererDEBUG,1,1);
     if(beginning() == false)
     {
         printf("ERROR!\n");
-        return 0;
+        beginning();
     }
     //printf("Would you like to run the graphics on a seperate thread? (This will increase speed at the expense of accuracy.)\n");
     //cin>>options;
@@ -52,23 +56,17 @@ int main()
     //{
         //thread graphic (handleGraphicsBASIC);
     //}
-    //printf("hmm\n");
-    #ifdef __linux__
-        thread input (handleSDLcontrol);
-    #endif // __linux__
-    //printf("hmm\n");
+   // #ifdef __linux__
+        //thread input (handleSDLcontrol);
+    //#endif // __linux__
     //thread throttle (throttleCPUfunc);
     //throttle.detach();
     fpsBenchmark();
     NESOB.opcode = NESOB.memory[NESOB.pc];
-    //NESOB.memory[0x0067] = 0xFF;
     uint64_t prevCycles;
     uint16_t prevScanline;
     while(NESOB.dontSetTrue == false) // Begin Loop
     {
-        //breakpoint = true;
-        //SDLinput = true;
-        //breakpoint = true;
         prevScanline = NESOB.scanline;
         throttleCPU = true;
         NESOB.opcode = NESOB.memory[NESOB.pc];
@@ -85,7 +83,7 @@ int main()
         //printRegs();
         //handleLog();
         //printRegs();
-        if(NESOB.pc == 0x03A2 && NESOB.a == 0x00 && NESOB.x == 0x01 && NESOB.y == 0x02)
+        if(NESOB.pc == 0xB293)
         {
             //printf("Scanline: 0x%i\n",NESOB.scanline);
             //breakpoint = true;
@@ -142,13 +140,10 @@ int main()
             {
                 handleGraphicsBASIC();
             }
-            if(graphicThread == true)
-            {
-                SDL_Delay(6);
-            }
-            #ifdef _WIN32
+            //#ifdef _WIN32
                 handleSDLcontrol();
-            #endif // _WIN32
+            //#endif // _WIN32
+            SDL_Delay(throttleCPUval);
             //throttleCPU = true;
             //while(doneThrottle == false)
             //{

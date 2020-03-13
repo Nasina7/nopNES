@@ -41,7 +41,8 @@ int doOpcode()
     {
 
         case 0x00:
-            NESOB.pc += 2;
+            NESOB.pc += 1;
+            //breakpoint = true;
             NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
             NESmemWrite(NESOB.pc >> 8, NESOB.tempValue16);
             NESOB.tempValue16 = NESOB.tempValue16--;
@@ -1793,7 +1794,7 @@ int doOpcode()
             NESOB.prevValue = NESOB.a; // Load PrevValue with A.
             NESOB.tempValue16 = NESmemRead(NESOB.pc + 2) << 8 | NESmemRead(NESOB.pc + 1);
             NESOB.tempValue16 += NESOB.y;
-            NESOB.a = NESOB.memory[NESOB.tempValue16]; // Load data in memory at location stored at pc+1 and pc+2 + x.
+            NESOB.a = NESmemRead(NESOB.tempValue16); // Load data in memory at location stored at pc+1 and pc+2 + x.
             handleFlags7(NESOB.a,NESOB.prevValue); // Handles the flags
             handleFlags1(NESOB.a,NESOB.prevValue); // Handles the flags
             NESOB.pc += 3;

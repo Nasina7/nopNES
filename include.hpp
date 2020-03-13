@@ -88,7 +88,9 @@ void memDump()
 }
 bool breakpoint;
 SDL_Window* nopNESwindow = NULL;
+SDL_Window* nopNESwindowDEBUG = NULL;
 SDL_Renderer* renderer;
+SDL_Renderer* rendererDEBUG;
 SDL_Event SDL_EVENT_HANDLING;
 int option2;
 using namespace std;
@@ -213,12 +215,30 @@ int bankSwitch16k(uint8_t value)
     fclose(rom);
     return true;
 }
+int bankSwitchPRG(uint8_t value, uint16_t beginlocation, uint16_t sizeval)
+{
+    switchLocation = value * 0x2000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + beginlocation,sizeval,1,rom);
+    fclose(rom);
+    return true;
+}
 int bankSwitch16k2(uint8_t value)
 {
     switchLocation = value * 0x4000;
     rom = fopen(NESOB.filename, "rb");
     fseek(rom,0x10 + switchLocation,SEEK_SET);
     fread(NESOB.memory + 0xC000,0x4000,1,rom); // Load first bank into 0xC000 to 0xFFFF
+    fclose(rom);
+    return true;
+}
+int fixSecondLastBankMMC3(uint16_t locationval, uint16_t sizeval)
+{
+    switchLocation = (NESOB.prgsize) - 0x4000;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.memory + locationval,sizeval,1,rom); // Load first bank into 0xC000 to 0xFFFF
     fclose(rom);
     return true;
 }
@@ -237,6 +257,24 @@ int CHRbankSwitch4k(uint8_t value)
     rom = fopen(NESOB.filename, "rb");
     fseek(rom,0x10 + switchLocation,SEEK_SET);
     fread(NESOB.PPUmemory + 0x0000,0x1000,1,rom);
+    fclose(rom);
+    return true;
+}
+int CHRbankSwitch(uint8_t value, uint16_t locationval, uint16_t sizeval)
+{
+    switchLocation = (value * 0x400) + NESOB.prgsize;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.PPUmemory + locationval,sizeval,1,rom);
+    fclose(rom);
+    return true;
+}
+int CHRbankSwitch2(uint8_t value, uint16_t locationval, uint16_t sizeval, uint16_t multip)
+{
+    switchLocation = (value * multip) + NESOB.prgsize;
+    rom = fopen(NESOB.filename, "rb");
+    fseek(rom,0x10 + switchLocation,SEEK_SET);
+    fread(NESOB.PPUmemory + locationval,sizeval,1,rom);
     fclose(rom);
     return true;
 }
@@ -363,6 +401,12 @@ uint8_t MMC1prgmode = 3;
 bool CHRbankmode = false;
 uint8_t prgSwitch;
 std::bitset<8> helpmapBitBuffer;
+uint8_t MMC3mod;
+uint8_t MMC3bankselect;
+std::bitset<8> MMC3bitset;
+uint8_t MMC3bankbit;
+bool MMC3prgbankbit;
+bool MMC3chrconvert;
 bool handleRomWrite(uint8_t value, uint16_t location)
 {
     switch(mapper)
@@ -444,7 +488,7 @@ bool handleRomWrite(uint8_t value, uint16_t location)
                     {
                         MMC1help1[0] = 0;
                         MMC1help1 = MMC1help1 >> 1;
-                        printf("testing\n");
+                        //printf("testing\n");
                         prgSwitch = MMC1help1.to_ulong();
                         bankSwitch32k(prgSwitch);
                     }
@@ -467,6 +511,124 @@ bool handleRomWrite(uint8_t value, uint16_t location)
 
         case 0x02:
             bankSwitch16k(value);
+        break;
+
+        case 0x03:
+            CHRbankSwitch2(value, 0x0000, 0x2000, 0x2000);
+        break;
+
+        case 0x04:
+            switch(location)
+            {
+                case 0x8000 ... 0x9FFF:
+                    MMC3mod = location % 2;
+                        if(MMC3mod == 0) // If location is an even number
+                        {
+                            MMC3bitset = value;
+                            MMC3bitset[7] = 0;
+                            MMC3bitset[6] = 0;
+                            MMC3bitset[5] = 0;
+                            MMC3bitset[4] = 0;
+                            MMC3bitset[3] = 0;
+                            MMC3bankbit = MMC3bitset.to_ulong();
+                            MMC3bitset = value;
+                            MMC3prgbankbit = MMC3bitset[6];
+                            MMC3chrconvert = MMC3bitset[7];
+                        }
+                        if(MMC3mod == 1) // If location is an odd number
+                        {
+                            //cout<<MMC3chrconvert<<endl;
+                            MMC3bankselect = value;
+                            if(MMC3bankbit == 0)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x0000, 0x800);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x1000, 0x800);
+                                }
+                            }
+                            if(MMC3bankbit == 1)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x0800, 0x800);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x1800, 0x800);
+                                }
+                            }
+                            if(MMC3bankbit == 2)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x1000, 0x400);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x0000, 0x400);
+                                }
+                            }
+                            if(MMC3bankbit == 3)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x1400, 0x400);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x0400, 0x400);
+                                }
+                            }
+                            if(MMC3bankbit == 4)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x1800, 0x400);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x0800, 0x400);
+                                }
+                            }
+                            if(MMC3bankbit == 5)
+                            {
+                                if(MMC3chrconvert == 0)
+                                {
+                                    CHRbankSwitch(value, 0x1C00, 0x400);
+                                }
+                                if(MMC3chrconvert == 1)
+                                {
+                                    CHRbankSwitch(value, 0x0C00, 0x400);
+                                }
+                            }
+                            if(MMC3bankbit == 6)
+                            {
+                                if(MMC3prgbankbit == 0)
+                                {
+                                    //printf("10x%X\n", value);
+                                    //breakpoint = true;
+                                    bankSwitchPRG(MMC3bankselect, 0x8000, 0x2000);
+                                    fixSecondLastBankMMC3(0xC000, 0x2000);
+                                }
+                                if(MMC3prgbankbit == 1)
+                                {
+                                    //printf("20x%X\n", value);
+                                    bankSwitchPRG(MMC3bankselect, 0xC000, 0x2000);
+                                    fixSecondLastBankMMC3(0x8000, 0x2000);
+                                }
+                            }
+                            if(MMC3bankbit == 7)
+                            {
+                                //printf("30x%X\n", value);
+                                bankSwitchPRG(MMC3bankselect, 0xA000, 0x2000);
+                            }
+                        }
+                break;
+            }
         break;
 
         case 0x42:
@@ -1026,6 +1188,8 @@ std::bitset<8> tempBitBuffer2;
 bool bgpattable;
 bool dontDouble;
 uint8_t nametableuse;
+bool sprite1000;
+bool spriteSize;
 void handleOther()
 {
     tempBitBuffer = NESOB.memory[0x2000];
@@ -1035,6 +1199,8 @@ void handleOther()
     tempBitBuffer2[2] = tempBitBuffer[2];
     tempBitBuffer2[1] = tempBitBuffer[1];
     tempBitBuffer2[0] = tempBitBuffer[0];
+    sprite1000 = tempBitBuffer[3];
+    spriteSize = tempBitBuffer[5];
     //dontDouble = false;
     /*
     if(tempBitBuffer2[6] == 0 && dontDouble == false)
