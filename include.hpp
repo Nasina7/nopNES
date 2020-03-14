@@ -13,6 +13,7 @@ int cycleModulo = 113; // 134 113 90
 std::bitset<8> controlBuffer;
 uint64_t currentFrame;
 uint64_t currentPPUFrame;
+bool MMC3mirror;
 bool newFrame;
 bool exitLoop;
 bool newOpcode;
@@ -180,6 +181,8 @@ bool read2002vb;
 bool throttleCPU = false;
 bool doneThrottle = false;
 bool reach261 = false;
+uint8_t tempVALUE;
+uint8_t tempVALUE2;
 void throttleCPUfunc()
 {
     throttleCPU = false;
@@ -407,6 +410,7 @@ std::bitset<8> MMC3bitset;
 uint8_t MMC3bankbit;
 bool MMC3prgbankbit;
 bool MMC3chrconvert;
+uint16_t prevval;
 bool handleRomWrite(uint8_t value, uint16_t location)
 {
     switch(mapper)
@@ -627,6 +631,13 @@ bool handleRomWrite(uint8_t value, uint16_t location)
                                 bankSwitchPRG(MMC3bankselect, 0xA000, 0x2000);
                             }
                         }
+                break;
+                case 0xA000 ... 0xBFFF:
+                    if(location % 2 == 0)
+                    {
+                        MMC3bitset = value;
+                        MMC3mirror = MMC3bitset[0];
+                    }
                 break;
             }
         break;
@@ -1013,11 +1024,11 @@ int NESmemWrite(uint8_t value, uint16_t location)
 uint8_t controllercount;
 std::bitset<8> resultcontrol;
 uint16_t getVal;
+std::bitset<8> reset2002;
 uint8_t NESmemRead(uint16_t location)
 {
     switch(location)
     {
-
         case 0x2002:
             NESOB.VRAMaddress2 = 0x0000;
             NESOB.VRAMaddresslow = 0x00;
@@ -1027,7 +1038,11 @@ uint8_t NESmemRead(uint16_t location)
         break;
 
         case 0x2007:
+                prevval = getVal;
                 getVal = NESOB.VRAMaddress2 % 0x4000;
+                if(getVal <= 0x3EFF)
+                {
+                //getVal = NESOB.VRAMaddress2 % 0x4000;
                 NESOB.Xbitbuffer = NESOB.memory[0x2000];
                 if(NESOB.Xbitbuffer[2] == 0)
                 {
@@ -1037,31 +1052,49 @@ uint8_t NESmemRead(uint16_t location)
                 {
                     NESOB.VRAMaddress2 += 0x20;
                 }
-                NESOB.memory[0x2007] = NESOB.PPUmemory[getVal];
+                NESOB.memory[0x2007] = NESOB.PPUmemory[prevval];
                 //printf("getVal: 0x%X\n",NESOB.PPUmemory[getVal]);
-                return NESOB.PPUmemory[getVal];
+                return NESOB.PPUmemory[prevval];
+                }
+
+                if(getVal > 0x3EFF)
+                {
+                    tempVALUE = NESOB.VRAMaddress2;
+                    tempVALUE = tempVALUE % 0x20;
+                    tempVALUE2 = NESOB.VRAMaddress2 >> 8;
+                    NESOB.VRAMaddress2 = tempVALUE2 << 8 | tempVALUE;
+                    NESOB.Xbitbuffer = NESOB.memory[0x2000];
+                    if(NESOB.Xbitbuffer[2] == 0)
+                    {
+                        NESOB.VRAMaddress2++;
+                        if(NESOB.VRAMaddress2 >= 0x4000)
+                        {
+                            NESOB.VRAMaddress2 = 0;
+                        }
+                    }
+                    if(NESOB.Xbitbuffer[2] == 1)
+                    {
+                        NESOB.VRAMaddress2 += 0x20;
+                        if(NESOB.VRAMaddress2 >= 0x4000)
+                        {
+                            NESOB.VRAMaddress2 -= 0x4000;
+                        }
+                    }
+                    NESOB.memory[0x2007] = NESOB.PPUmemory[getVal];
+                    //printf("getVal: 0x%X\n",NESOB.PPUmemory[getVal]);
+                    return NESOB.PPUmemory[getVal];
+                }
+
         break;
 
         case 0x2008 ... 0x3FFF:
-            //printf("Location: 0x%X\n", location);
-            locationMod8 = location % 0x08;
-            location8 = 0x20 << 8 | locationMod8;
+            printf("Location: 0x%X\n", location);
+            location8 = location % 8;
+            location8 += 0x2000;
             location = location8;
-           // printf("Location After: 0x%X\n", location);
-            switch(location)
-            {
-                case 0x2002:
-                NESOB.VRAMaddress2 = 0x0000;
-                NESOB.VRAMaddresslow = 0x00;
-                NESOB.VRAMaddresshigh = 0x00;
-                NESOB.PPUwritecounter = 0;
-                read2002vb = true;
-                break;
-
-                default:
-
-                break;
-            }
+            printf("Location After: 0x%X\n", location);
+            NESmemRead(location);
+            return true;
         break;
 
         case 0x4016:

@@ -6,6 +6,7 @@ In the bin/Debug folder, there is a file called nopNES.exe.
 Download that, as well as pal.pal and put those in a seperate folder.  
 Put your roms there as well.  
 Then, double click on nopNES.exe to run it.  
+If it complains about not having SDL2.dll, download that, put it with the executable and try again  
 Enter the name of the rom and play.  
 NOTE!  Windows builds are untested and experimental and may contain bugs!  
 ## Running (Linux)
@@ -24,3 +25,7 @@ Start = Enter
 Select = Space  
 B = Z  
 A = X  
+## Hotkeys
+Q = Slowdown the emulator by an amount  
+W = Overclock or underclock the CPU  
+R = Reset  

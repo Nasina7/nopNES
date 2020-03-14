@@ -7,6 +7,7 @@ std::bitset<8> graphicline;
 std::bitset<8> graphicline2;
 std::bitset<8> graphiclineS;
 std::bitset<8> graphicline2S;
+int blitsu = 1024;
 uint8_t currentnametable;
 uint8_t tilecounte;
 uint8_t currentblockx;
@@ -145,7 +146,7 @@ void palDetermine()
     color_03 = {pal11[0],pal11[1],pal11[2],pal11[3]};
 }
 uint8_t prevBlock;
-void palDetermineREWRITE()
+void horipal()
 {
     if(nametableuse == 0 || nametableuse == 2)
     {
@@ -156,6 +157,14 @@ void palDetermineREWRITE()
         if(currentnametable == 1)
         {
             currentGridat = NESOB.PPUmemory[(0x27C0) + currentGrid];
+        }
+        if(currentnametable == 2)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+        if(currentnametable == 3)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2FC0) + currentGrid];
         }
     }
     if(nametableuse == 1 || nametableuse == 3)
@@ -168,6 +177,66 @@ void palDetermineREWRITE()
         {
             currentGridat = NESOB.PPUmemory[(0x27C0) + currentGrid];
         }
+        if(currentnametable == 2)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+        if(currentnametable == 3)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2FC0) + currentGrid];
+        }
+    }
+}
+void vertpal()
+{
+    if(nametableuse == 0 || nametableuse == 1)
+    {
+        if(currentnametable == 0)
+        {
+            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
+        }
+        if(currentnametable == 1)
+        {
+            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
+        }
+        if(currentnametable == 2)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+        if(currentnametable == 3)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+    }
+    if(nametableuse == 2 || nametableuse == 3)
+    {
+        if(currentnametable == 0)
+        {
+            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
+        }
+        if(currentnametable == 1)
+        {
+            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
+        }
+        if(currentnametable == 2)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+        if(currentnametable == 3)
+        {
+            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
+        }
+    }
+}
+void palDetermineREWRITE()
+{
+    if(MMC3mirror == false)
+    {
+        horipal();
+    }
+    if(MMC3mirror == true)
+    {
+        vertpal();
     }
     currentBlockat[0] = currentGridat[currentBlock];
     currentBlockat[1] = currentGridat[currentBlock + 1];
@@ -524,6 +593,132 @@ int renderHVFLIPSprite()
             //printf("curSpr:0x%X\n", currentSprite);
         }
 }
+void horizontalmirror()
+{
+    if(nametableuse == 0 || nametableuse == 2)
+    {
+        mainScreen.w = 256;
+        mainScreen.h = 240;
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+    }
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("nameuse: 0x%X\n",nametableuse);
+    if(nametableuse == 1 || nametableuse == 3)
+    {
+        mainScreen.w = 256;
+        mainScreen.h = 240;
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+    }
+}
+void verticalmirror()
+{
+    if(nametableuse == 0 || nametableuse == 1)
+    {
+        mainScreen.w = 256;
+        mainScreen.h = 240;
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+    }
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("nameuse: 0x%X\n",nametableuse);
+    if(nametableuse == 2 || nametableuse == 3)
+    {
+        mainScreen.w = 256;
+        mainScreen.h = 240;
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 0 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 240 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        mainScreen.x = 256 - scrollx;
+        mainScreen.y = 0 - scrolly;
+        SDL_RenderSetViewport(renderer, &mainScreen);
+        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
+        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+    }
+}
 int handleSprites()
 {
     // Begin Sprite Code
@@ -662,7 +857,6 @@ int handleSprites()
 }
 uint8_t xpixplus;
 uint8_t ypixplus;
-int blitsu = 1024;
 uint8_t xpixsc;
 uint8_t ypixsc;
 uint8_t ppurendercount;
@@ -763,7 +957,7 @@ int handleGraphicsBASIC()
                                 }
                         }
                     }
-                    if(nametableAddr2 == 0x2400)
+                    if(nametableAddr2 == 0x2400 || 0x2800)
                     {
                         if (palResult == 0)
                         {
@@ -839,70 +1033,22 @@ int handleGraphicsBASIC()
         Ycounter = 32;
         currentnametable = 1;
         ppurendercount--;
-        nametableAddr2 = 0x2400;
+        nametableAddr2 = 0x2800;
+        if(MMC3mirror == false)
+        {
+            nametableAddr2 = 0x2400;
+        }
         //plusAmount = 65536;
     }
-    if(nametableuse == 0 || nametableuse == 2)
+
+    if(MMC3mirror == false)
     {
-        mainScreen.w = 256;
-        mainScreen.h = 240;
-        mainScreen.x = 0 - scrollx;
-        mainScreen.y = 0 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-        mainScreen.x = 256 - scrollx;
-        mainScreen.y = 0 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
-        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
-
-        mainScreen.x = 0 - scrollx;
-        mainScreen.y = 240 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-        mainScreen.x = 256 - scrollx;
-        mainScreen.y = 240 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
-        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
-
+        horizontalmirror();
     }
-    //printf("Scrollx: 0x%X\n",scrollx);
-    //printf("Scrolly: 0x%X\n",scrolly);
-    //printf("nameuse: 0x%X\n",nametableuse);
-    if(nametableuse == 1 || nametableuse == 3)
+    if(MMC3mirror == true)
     {
-        mainScreen.w = 256;
-        mainScreen.h = 240;
-        mainScreen.x = 256 - scrollx;
-        mainScreen.y = 0 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-        mainScreen.x = 0 - scrollx;
-        mainScreen.y = 0 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
-        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
-
-        mainScreen.x = 256 - scrollx;
-        mainScreen.y = 240 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture, NULL, pixels, blitsu);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-        mainScreen.x = 0 - scrollx;
-        mainScreen.y = 240 - scrolly;
-        SDL_RenderSetViewport(renderer, &mainScreen);
-        SDL_UpdateTexture(texture2400, NULL, pixels2400, blitsu);
-        SDL_RenderCopy(renderer, texture2400, NULL, NULL);
+        verticalmirror();
     }
-
     mainScreen.x = 0;
     mainScreen.y = 0;
     SDL_RenderSetViewport(renderer, &mainScreen);

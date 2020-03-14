@@ -12,14 +12,9 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
-					<Add option="-std=c++14" />
 				</Compiler>
-				<Linker>
-					<Add option="-s" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/nopNES" prefix_auto="1" extension_auto="1" />
