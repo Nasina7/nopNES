@@ -5,13 +5,9 @@ int handleControlsr()
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
 
-        //case SDLK_2:
-            //printf("0x%X\n",currentGridat);
-        //break;
-
-        //case SDLK_3:
+        case SDLK_e:
             //cin>>blitsu;
-        //break;
+        break;
 
         case SDLK_q:
             printf("Increase this number to slow down the Emulator.\nCurrent Value: %i\nDefault is 0\nChange throttle value to: ",throttleCPUval);
@@ -32,7 +28,7 @@ int handleControlsr()
         break;
 
         case SDLK_BACKSLASH:
-            //showGrid = false;
+            showGrid = false;
         break;
 
         case SDLK_b:
@@ -107,6 +103,7 @@ int handleControlsr()
         break;
 
         }
+    return 0;
 }
 int handleControls()
 {
@@ -142,11 +139,11 @@ int handleControls()
         case SDLK_RIGHTBRACKET:
             showBlock = true;
         break;
-
+        */
         case SDLK_BACKSLASH:
             showGrid = true;
         break;
-        */
+
         case SDLK_z:
             controlBuffer[1] = 1;
         break;
@@ -192,14 +189,12 @@ int handleSDLcontrol()
 {
     while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
         {
-            //printf("event?\n");
             if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
             {
                 NESOB.closeProgram = true;
             }
             if (SDL_EVENT_HANDLING.type == SDL_KEYDOWN) // If a key is being pressed, handle controls.
             {   // Handle Controls
-                //printf("KEYDOWN");
                 handleControls();
             }
             if (SDL_EVENT_HANDLING.type == SDL_KEYUP)
@@ -207,7 +202,5 @@ int handleSDLcontrol()
                 handleControlsr();
             }
         }
-        //#ifdef __linux__
-            //handleSDLcontrol();
-        //#endif // __linux__
+    return 0;
 }

@@ -1,11 +1,11 @@
 # depslib dependency file v1.0
-1584142190 source:/home/zach/codeblocks/nopNES/main.cpp
+1584703339 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
-1584133876 /home/zach/codeblocks/nopNES/cpu.hpp
+1584705939 /home/zach/codeblocks/nopNES/cpu.hpp
 	"Controls.hpp"
 
-1584143678 /home/zach/codeblocks/nopNES/include.hpp
+1584712700 /home/zach/codeblocks/nopNES/include.hpp
 	<iostream>
 	<string>
 	<bitset>
@@ -15,10 +15,10 @@
 	<unordered_map>
 	<unistd.h>
 
-1584136087 /home/zach/codeblocks/nopNES/Controls.hpp
+1584704055 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
-1584144159 /home/zach/codeblocks/nopNES/graphics.hpp
+1584712870 /home/zach/codeblocks/nopNES/graphics.hpp
 	"mappers.hpp"
 
 1522244266 /usr/include/wx-3.0/wx/string.h
@@ -2241,6 +2241,6 @@
 1583935697 /home/zach/codeblocks/nopNES/mappers.hpp
 	"sound.hpp"
 
-1584135319 /home/zach/codeblocks/nopNES/sound.hpp
+1584616909 /home/zach/codeblocks/nopNES/sound.hpp
 	"include.hpp"
 

@@ -9,15 +9,19 @@ int main()
     }
     nopNESwindow = SDL_CreateWindow("nopNES Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
-
-    //nopNESwindowDEBUG = SDL_CreateWindow("Pallete", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0xF * 8, 0x1F * 8, SDL_WINDOW_RESIZABLE);
-    //rendererDEBUG = SDL_CreateRenderer(nopNESwindowDEBUG, -1, SDL_RENDERER_ACCELERATED);
     texture = SDL_CreateTexture
     (
         renderer,
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING,
         256, 240
+    );
+    textureScanline = SDL_CreateTexture
+    (
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        512, 256
     );
     texture2400 = SDL_CreateTexture
     (
@@ -27,40 +31,28 @@ int main()
         256, 240
     );
     SDL_RenderSetScale(renderer,2,2);
-    //SDL_RenderSetScale(rendererDEBUG,1,1);
     if(beginning() == false)
     {
         printf("ERROR!\n");
         beginning();
     }
-    //printf("Would you like to run the graphics on a seperate thread? (This will increase speed at the expense of accuracy.)\n");
-    //cin>>options;
-    //if(options == 'y')
-    //{
-        graphicThread = false;
-        //printf("THIS IS CURRENTLY BROKEN!\n SWITCHING TO DEFAULT...\n");
-    //}
-    //if(options == 'n')
-    //{
-       // graphicThread = false;
-    //}
-    //cout<<graphicThread<<endl;
+    printf("Would you like to use the scanline renderer?\nThis will improve accuracy of some games but it is not finished. (y or n)\n");
+    cin>>options;
+    if(options == 'y')
+    {
+        rendererChoose = true;
+    }
+    if(options == 'n')
+    {
+        rendererChoose = false;
+    }
+    graphicThread = false;
     currentFrame = 0;
     nesPowerOn();
     NESOB.scanline = 0;
     pal = fopen("pal.pal", "rb");
     fread(pallete,192,1,pal);
     fclose(pal);
-    //printf("hmm\n");
-    //if(graphicThread == true)
-    //{
-        //thread graphic (handleGraphicsBASIC);
-    //}
-   // #ifdef __linux__
-        //thread input (handleSDLcontrol);
-    //#endif // __linux__
-    //thread throttle (throttleCPUfunc);
-    //throttle.detach();
     fpsBenchmark();
     NESOB.opcode = NESOB.memory[NESOB.pc];
     uint64_t prevCycles;
@@ -72,29 +64,19 @@ int main()
         NESOB.opcode = NESOB.memory[NESOB.pc];
         prevScanlineTimer = NESOB.cycles % cycleModulo;
         //printf("Opcode: 0x%X\n",NESOB.opcode);
-        //cout<<newOpcode2<<endl;
         //printf("PC: 0x%X\n",NESOB.pc);
         prevCycles = NESOB.cycles;
         doOpcode();
+        NESOB.Pbitbuffer = NESOB.pflag;
+        //cout<<NESOB.Pbitbuffer<<endl;
         handleOther();
         handleInterrupts();
         handleScanlineStuff();
         //breakpoint = true;
         //printRegs();
         //handleLog();
-        //printRegs();
-        if(NESOB.pc == 0xB293)
-        {
-            //printf("Scanline: 0x%i\n",NESOB.scanline);
-            //breakpoint = true;
-        }
-        if(NESOB.memory[0x0001] == 0x3F)
-        {
-            //breakpoint = true;
-        }
         if(breakpoint == true)
         {
-            //printf("MMC1: %i\n",MMC1counter);
             printRegs();
             printf("Continue?\n");
             cin>>options;
@@ -127,37 +109,31 @@ int main()
         {
             memDump();
             exitLoop = true;
-            //fclose (logfile);
             return 0;
         }
-        if(prevScanline < NESOB.scanline)
+        if(prevScanline < NESOB.scanline || prevScanline > NESOB.scanline)
         {
-            //handleGraphicsBASICSCAN();
+            if(rendererChoose == true)
+            {
+                blitsu = 2048;
+                handleGraphicsBASICSCAN();
+            }
         }
         if( (prevCycles % 29780) > (NESOB.cycles % 29780) )
         {
-            if(graphicThread == false)
+            if(graphicThread == false && rendererChoose == false)
             {
                 handleGraphicsBASIC();
             }
-            //#ifdef _WIN32
-                handleSDLcontrol();
-            //#endif // _WIN32
+            handleSDLcontrol();
             SDL_Delay(throttleCPUval);
-            //throttleCPU = true;
-            //while(doneThrottle == false)
-            //{
-
-            //}
-            //thread throttle (throttleCPUfunc);
-            //throttle.detach();
         }
 
     }
     return 0;
 }
 
-int WinMain()
+int WinMain()  // This is here to fix the Windows Build
 {
     main();
     return 0;

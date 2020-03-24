@@ -2,7 +2,6 @@
 
 void nesPowerOn()
 {
-    //NESOB.pc = 0xC000;
     NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC]; // Sets Initial PC Value
     NESOB.pflag = 0x04;
     NESOB.sp = 0xFD;
@@ -16,7 +15,6 @@ void handleNMI()
     if(NESOB.Xbitbuffer[7] == 1 && NMIrequest == true)
     {
         NMIrequest = false;
-        //printf("NMI\n");
         NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
         NESOB.higherPC = NESOB.pc >> 8;
         NESOB.lowerPC = NESOB.pc;
@@ -41,17 +39,22 @@ int doOpcode()
     {
 
         case 0x00:
-            NESOB.pc += 1;
+            NESOB.pc += 2;
+            //printf("0x00\n");
             //breakpoint = true;
             NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
             NESmemWrite(NESOB.pc >> 8, NESOB.tempValue16);
-            NESOB.tempValue16 = NESOB.tempValue16--;
+            NESOB.tempValue16--;
             NESmemWrite(NESOB.pc, NESOB.tempValue16);
-            NESOB.tempValue16 = NESOB.tempValue16--;
+            NESOB.tempValue16--;
             NESOB.Pbitbuffer = NESOB.pflag;
             NESOB.Pbitbuffer[4] = 1;
+            NESOB.Pbitbuffer[5] = 1;
+            //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Pbitbuffer.to_ulong(), NESOB.tempValue16);
+            NESOB.Pbitbuffer = NESOB.pflag;
+            NESOB.Pbitbuffer[2] = 1;
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            NESmemWrite(NESOB.pflag, NESOB.tempValue16);
             NESOB.sp -= 3;
             NESOB.pc = NESmemRead(0xFFFF) << 8 | NESmemRead(0xFFFE);
             NESOB.cycles += 7;
@@ -1437,7 +1440,7 @@ int doOpcode()
             printf("WARNING!  INVALID OPCODE 0x8B WAS RUN!\n");
             NESOB.prevValue = NESOB.a;
             NESOB.a = NESOB.x;
-            NESOB.a & NESmemRead(NESOB.pc + 1);
+            NESOB.a = NESOB.a & NESmemRead(NESOB.pc + 1);
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 2;

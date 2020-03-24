@@ -10,6 +10,7 @@
 #endif // _WIN32
 #include <unordered_map>
 int cycleModulo = 113; // 134 113 90
+bool breakpoint;
 std::bitset<8> controlBuffer;
 uint64_t currentFrame;
 uint64_t currentPPUFrame;
@@ -20,6 +21,7 @@ bool newOpcode;
 bool beginOpLoop;
 bool newOpcode2;
 uint16_t nametableAddr;
+bool rendererChoose;
 class NESCPU
 {
     public:
@@ -58,7 +60,7 @@ class NESCPU
         std::bitset<8> Ybitbuffer;
         std::bitset<8> Sbitbuffer;
         std::bitset<8> Pbitbuffer;
-        int64_t cycles;
+        uint64_t cycles;
         uint8_t prevValue;
         uint8_t lowerPC;
         uint8_t higherPC;
@@ -75,6 +77,13 @@ bool showBlock;
 bool showTile;
 bool restartNopNES;
 FILE* pal = NULL;
+void breakpointfunc(uint16_t thepc)
+{
+    if(NESOB.pc == thepc)
+    {
+        breakpoint = true;
+    }
+}
 void memDump()
 {
     FILE* mem_dump = fopen ("log/memdump", "w+");
@@ -87,7 +96,6 @@ void memDump()
     fwrite (OAMmem , sizeof(char), sizeof(OAMmem), mem_dump3);
     fclose (mem_dump3);
 }
-bool breakpoint;
 SDL_Window* nopNESwindow = NULL;
 SDL_Window* nopNESwindowDEBUG = NULL;
 SDL_Renderer* renderer;
@@ -167,6 +175,7 @@ void handleFlags(uint8_t value, uint8_t prevValue)
     }
     NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
 }
+uint16_t location2;
 bool beginBenchmark;
 uint64_t currentFpsonStart;
 uint64_t currentFpsonEnd;
@@ -359,6 +368,7 @@ int doBenchmark()
     SDL_SetWindowTitle(nopNESwindow, windowTitle);
     beginBenchmark = false;
     doBenchmark();
+    return 0;
 }
 void fpsBenchmark()
 {
@@ -683,6 +693,7 @@ bool handleRomWrite(uint8_t value, uint16_t location)
             return false;
         break;
     }
+    return 0;
 }
 
 int NESmemWrite(uint8_t value, uint16_t location)
@@ -690,6 +701,10 @@ int NESmemWrite(uint8_t value, uint16_t location)
     //printf("location: 0x%X\n",location);
     switch(location)
     {
+        case 0x2002:
+            return 0;
+        break;
+
         case 0x2003:
             oamAddr = value;
         break;
@@ -835,140 +850,10 @@ int NESmemWrite(uint8_t value, uint16_t location)
         break;
 
         case 0x2008 ... 0x3FFF:
-            //printf("HMMM\n\n\n\n\n\n\n\n");
-            locationMod8 = location % 0x08;
-            location8 = 0x20 << 8 | locationMod8;
-            location = location8;
-            switch(location) // Code formatting here sucks because of copy paste.
-            {
-                case 0x2005:
-            if(scrollwrite == 0)
-            {
-                scrollwrite++;
-                scrollx = value;
-                goto done20052;
-            }
-            if(scrollwrite == 1)
-            {
-                scrollwrite = 0;
-                scrolly = value;
-            }
-            done20052:
-        break;
-
-        case 0x2006:
-            if(NESOB.PPUwritecounter == 0)
-            {
-                NESOB.VRAMaddresshigh = value;
-                NESOB.PPUwritecounter = 1;
-                goto done0x20062;
-            }
-            if(NESOB.PPUwritecounter == 1)
-            {
-                NESOB.VRAMaddresslow = value;
-                NESOB.VRAMaddress2 = NESOB.VRAMaddresshigh << 8 | NESOB.VRAMaddresslow;
-                NESOB.PPUwritecounter = 0;
-            }
-            done0x20062:  // Need to Remove
-        break;
-
-        case 0x2007:
-                NESOB.VRAMaddress2 = NESOB.VRAMaddress2 % 0x4000;
-                if(NESOB.VRAMaddress2 >= 0x3F00 && NESOB.VRAMaddress2 < 0x3F20)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xA0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xC0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xE0] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3F20 && NESOB.VRAMaddress2 < 0x3F40)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xA0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xC0] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3F40 && NESOB.VRAMaddress2 < 0x3F60)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0xA0] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3F60 && NESOB.VRAMaddress2 < 0x3F80)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x80] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3F80 && NESOB.VRAMaddress2 < 0x3FA0)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x60] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3FA0 && NESOB.VRAMaddress2 < 0x3FC0)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xA0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x40] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3FC0 && NESOB.VRAMaddress2 < 0x3FE0)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xC0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xA0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 + 0x20] = value;
-                }
-                if(NESOB.VRAMaddress2 >= 0x3FE0 && NESOB.VRAMaddress2 <= 0x3FFF)
-                {
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xE0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xC0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0xA0] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x80] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x60] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x40] = value;
-                    NESOB.PPUmemory[NESOB.VRAMaddress2 - 0x20] = value;
-                }
-                NESOB.PPUmemory[NESOB.VRAMaddress2] = value;
-                NESOB.Xbitbuffer = NESOB.memory[0x2000];
-                if(NESOB.Xbitbuffer[2] == 0)
-                {
-                    NESOB.VRAMaddress2++;
-                }
-                if(NESOB.Xbitbuffer[2] == 1)
-                {
-                    NESOB.VRAMaddress2 += 0x20;
-                }
-        break;
-        default:
-
-        break;
-            }
+            location2 = location % 8;
+            location2 += 0x2000;
+            NESmemWrite(value,location2);
+            return 0;
         break;
 
         case 0x4014:
@@ -1088,13 +973,13 @@ uint8_t NESmemRead(uint16_t location)
         break;
 
         case 0x2008 ... 0x3FFF:
-            printf("Location: 0x%X\n", location);
-            location8 = location % 8;
-            location8 += 0x2000;
-            location = location8;
-            printf("Location After: 0x%X\n", location);
-            NESmemRead(location);
-            return true;
+            breakpoint = true;
+            //printf("Location: 0x%X\n", location);
+            location2 = location % 8;
+            location2 += 0x2000;
+            //printf("Location After: 0x%X\n", location2);
+            NESmemRead(location2);
+            return NESOB.memory[location2];
         break;
 
         case 0x4016:
@@ -1218,6 +1103,7 @@ void NESmemDec(uint16_t location)
 }
 std::bitset<8> tempBitBuffer;
 std::bitset<8> tempBitBuffer2;
+std::bitset<8> tempBitBuffer3;
 bool bgpattable;
 bool dontDouble;
 uint8_t nametableuse;
@@ -1248,8 +1134,15 @@ void handleOther()
     }
     */
     //dontDouble = false;
+    if(NESOB.scanline == 0)
+    {
+        tempBitBuffer3 = NESOB.memory[0x2000];
+        tempBitBuffer3[1] = 0;
+        tempBitBuffer3[0] = 0;
+        NESOB.memory[0x2000] = tempBitBuffer3.to_ulong();
+    }
     tempBitBuffer2[6] = 0;
-    if(NESOB.scanline == OAMmem[0])
+    if(NESOB.scanline == OAMmem[0] + 8)
     {
         tempBitBuffer2[6] = 1;
     }
@@ -1294,4 +1187,5 @@ int handleLog()
         return 1;
     }
     fprintf(logfile, "%X                                            A:%X X:%X Y:%X P:%X SP:%X \n", NESOB.pc, NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
+    return 0;
 }
