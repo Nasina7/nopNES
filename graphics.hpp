@@ -1093,7 +1093,7 @@ int handleGraphicsBASICSCAN()
                     curPixx = bit916convert.to_ulong();
                     if(NESOB.scanline <= 255)
                     {
-                        curPixx += ypix * 512;
+                        curPixx += (ypix) * 512;
                     }
                     else
                     {

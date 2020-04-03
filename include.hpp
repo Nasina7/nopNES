@@ -1,7 +1,12 @@
 #include <iostream>
 #include <string>
 #include <bitset>
+#ifdef __linux__
 #include <SDL2/SDL.h>
+#endif // __linux__
+#ifdef _WIN32
+#include <SDL.h>
+#endif // _WIN32
 #ifdef __linux__
     #include <thread>
 #endif // __linux__
@@ -9,8 +14,10 @@
     #include "mingw.thread.h"
 #endif // _WIN32
 #include <unordered_map>
+#include "tinyfiledialogs/tinyfiledialogs.h"
 int cycleModulo = 113; // 134 113 90
 bool breakpoint;
+bool enableSound;
 std::bitset<8> controlBuffer;
 uint64_t currentFrame;
 uint64_t currentPPUFrame;
@@ -1189,3 +1196,4 @@ int handleLog()
     fprintf(logfile, "%X                                            A:%X X:%X Y:%X P:%X SP:%X \n", NESOB.pc, NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
     return 0;
 }
+

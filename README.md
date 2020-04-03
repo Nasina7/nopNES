@@ -5,8 +5,8 @@ This means that there may occasionally be gaps of no progress between commits.
 In the bin/Debug folder, there is a file called nopNES.exe.  
 Download that, as well as pal.pal and put those in a seperate folder.  
 Put your roms there as well.  
+Download SDL2.dll and SDL2_mixer.dll and put it in that folder too  
 Then, double click on nopNES.exe to run it.  
-If it complains about not having SDL2.dll, download that, put it with the executable and try again  
 Enter the name of the rom and play.  
 NOTE!  Windows builds are untested and experimental and may contain bugs!  
 ## Running (Linux)

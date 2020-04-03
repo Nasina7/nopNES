@@ -7,6 +7,11 @@ int main()
         printf("SDL2 was Unable to Initialize!");
         return 1;
     }
+    if(Mix_OpenAudio(48000,AUDIO_S8,1,800)==-1)
+    {
+        printf("Mix_OpenAudio: %s\n",Mix_GetError());
+        return 2;
+    }
     nopNESwindow = SDL_CreateWindow("nopNES Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
     texture = SDL_CreateTexture
@@ -45,6 +50,16 @@ int main()
     if(options == 'n')
     {
         rendererChoose = false;
+    }
+    printf("Would you like to enable sound?\nVERY WIP!  WILL HURT YOUR EARS! (y or n)\n");
+    cin>>options;
+    if(options == 'y')
+    {
+        enableSound = true;
+    }
+    if(options == 'n')
+    {
+        enableSound = false;
     }
     graphicThread = false;
     currentFrame = 0;
@@ -121,6 +136,10 @@ int main()
         }
         if( (prevCycles % 29780) > (NESOB.cycles % 29780) )
         {
+            if(enableSound == true)
+            {
+                handleSound();
+            }
             if(graphicThread == false && rendererChoose == false)
             {
                 handleGraphicsBASIC();

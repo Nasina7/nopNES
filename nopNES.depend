@@ -1,24 +1,26 @@
 # depslib dependency file v1.0
-1584703339 source:/home/zach/codeblocks/nopNES/main.cpp
+1585896401 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
 1584705939 /home/zach/codeblocks/nopNES/cpu.hpp
 	"Controls.hpp"
 
-1584712700 /home/zach/codeblocks/nopNES/include.hpp
+1585896827 /home/zach/codeblocks/nopNES/include.hpp
 	<iostream>
 	<string>
 	<bitset>
 	<SDL2/SDL.h>
+	<SDL.h>
 	<thread>
 	"mingw.thread.h"
 	<unordered_map>
+	"tinyfiledialogs/tinyfiledialogs.h"
 	<unistd.h>
 
-1584704055 /home/zach/codeblocks/nopNES/Controls.hpp
+1585178360 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
-1584712870 /home/zach/codeblocks/nopNES/graphics.hpp
+1585148116 /home/zach/codeblocks/nopNES/graphics.hpp
 	"mappers.hpp"
 
 1522244266 /usr/include/wx-3.0/wx/string.h
@@ -2241,6 +2243,19 @@
 1583935697 /home/zach/codeblocks/nopNES/mappers.hpp
 	"sound.hpp"
 
-1584616909 /home/zach/codeblocks/nopNES/sound.hpp
+1585896827 /home/zach/codeblocks/nopNES/sound.hpp
 	"include.hpp"
+	<SDL2/SDL_mixer.h>
+	<SDL_mixer.h>
+
+1575842499 /home/zach/codeblocks/nopNES/tinyfiledialogs/tinyfiledialogs.h
+
+1540997992 /home/zach/SDL2_mixer-2.0.4/i686-w64-mingw32/include/SDL2/SDL_mixer.h
+	"SDL_stdinc.h"
+	"SDL_rwops.h"
+	"SDL_audio.h"
+	"SDL_endian.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
 
