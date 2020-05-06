@@ -3,12 +3,14 @@ uint8_t bitcount;
 SDL_Texture* texture = NULL;
 SDL_Texture* texture2400 = NULL;
 SDL_Texture* textureScanline = NULL;
+SDL_Texture* textureScanline28 = NULL;
 SDL_Rect mainScreen;
 std::bitset<8> graphicline;
 std::bitset<8> graphicline2;
 std::bitset<8> graphiclineS;
 std::bitset<8> graphicline2S;
-int blitsu = 1024;
+std::bitset<8> spriteAtt;
+int blitsu = 2048;
 uint16_t nametableAddr2;
 uint8_t currentnametable;
 uint8_t tilecounte;
@@ -27,14 +29,15 @@ uint16_t xpix;
 uint16_t ypix;
 uint8_t tilelocation;
 uint16_t tiledatalocation1;
-int pal00[4] = {0xFF,0xFF,0xFF,0x00};
-int pal01[4] = {0xC2,0xC2,0xC2,0x00};
-int pal10[4] = {0x76,0x76,0x76,0x00};
-int pal11[4] = {0x00,0x00,0x00,0x00};
-int pal00S[4] = {0xFF,0xFF,0xFF,0x00};
-int pal01S[4] = {0xC2,0xC2,0xC2,0x00};
-int pal10S[4] = {0x76,0x76,0x76,0x00};
-int pal11S[4] = {0x00,0x00,0x00,0x00};
+uint8_t pal00[4] = {0xFF,0xFF,0xFF,0x00};
+uint8_t pal01[4] = {0xC2,0xC2,0xC2,0x00};
+uint8_t pal10[4] = {0x76,0x76,0x76,0x00};
+uint8_t pal11[4] = {0x00,0x00,0x00,0x00};
+uint8_t pal[16];
+uint8_t pal00S[4] = {0xFF,0xFF,0xFF,0x00};
+uint8_t pal01S[4] = {0xC2,0xC2,0xC2,0x00};
+uint8_t pal10S[4] = {0x76,0x76,0x76,0x00};
+uint8_t pal11S[4] = {0x00,0x00,0x00,0x00};
 SDL_Color color_00;
 SDL_Color color_01;
 SDL_Color color_02;
@@ -148,107 +151,27 @@ void palDetermine()
     color_03 = {pal11[0],pal11[1],pal11[2],pal11[3]};
 }
 uint8_t prevBlock;
-void horipal()
-{
-    currentGridat = NESOB.PPUmemory[(nametableAddr2 + 0x3C0) + currentGrid];
-}
-void vertpal()
-{
-    if(nametableuse == 0 || nametableuse == 1)
-    {
-        if(currentnametable == 0)
-        {
-            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
-        }
-        if(currentnametable == 1)
-        {
-            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
-        }
-        if(currentnametable == 2)
-        {
-            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
-        }
-        if(currentnametable == 3)
-        {
-            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
-        }
-    }
-    if(nametableuse == 2 || nametableuse == 3)
-    {
-        if(currentnametable == 0)
-        {
-            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
-        }
-        if(currentnametable == 1)
-        {
-            currentGridat = NESOB.PPUmemory[(0x23C0) + currentGrid];
-        }
-        if(currentnametable == 2)
-        {
-            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
-        }
-        if(currentnametable == 3)
-        {
-            currentGridat = NESOB.PPUmemory[(0x2BC0) + currentGrid];
-        }
-    }
-}
+uint16_t palLocLookup[4] = {0x3F01, 0x3F05, 0x3F09, 0x3F0D};
 void palDetermineREWRITE()
 {
-    if(MMC3mirror == false)
-    {
-        horipal();
-    }
-    if(MMC3mirror == true)
-    {
-        vertpal();
-    }
-    currentBlockat[0] = currentGridat[currentBlock];
-    currentBlockat[1] = currentGridat[currentBlock + 1];
-    if(currentBlockat[1] == 0 && currentBlockat[0] == 0)
-    {
-        palLocate = 0x3F01;
-    }
-    if(currentBlockat[1] == 0 && currentBlockat[0] == 1)
-    {
-        palLocate = 0x3F05;
-    }
-    if(currentBlockat[1] == 1 && currentBlockat[0] == 0)
-    {
-        palLocate = 0x3F09;
-    }
-    if(currentBlockat[1] == 1 && currentBlockat[0] == 1)
-    {
-        palLocate = 0x3F0D;
-    }
-    bgcol = NESOB.PPUmemory[0x3F00];
-    bgcol = bgcol * 3;
-    pal00[0] = pallete[bgcol];
-    pal00[1] = pallete[bgcol + 1];
-    pal00[2] = pallete[bgcol + 2];
-    pal00[3] = 0xFF;
-    bgcol = NESOB.PPUmemory[palLocate];
-    bgcol = bgcol * 3;
-    pal01[0] = pallete[bgcol];
-    pal01[1] = pallete[bgcol + 1];
-    pal01[2] = pallete[bgcol + 2];
-    pal01[3] = 0xFF;
-    bgcol = NESOB.PPUmemory[palLocate + 1];
-    bgcol = bgcol * 3;
-    pal10[0] = pallete[bgcol];
-    pal10[1] = pallete[bgcol + 1];
-    pal10[2] = pallete[bgcol + 2];
-    pal10[3] = 0xFF;
-    bgcol = NESOB.PPUmemory[palLocate + 2];
-    bgcol = bgcol * 3;
-    pal11[0] = pallete[bgcol];
-    pal11[1] = pallete[bgcol + 1];
-    pal11[2] = pallete[bgcol + 2];
-    pal11[3] = 0xFF;
-    color_00 = {pal00[0],pal00[1],pal00[2],pal00[3]};
-    color_01 = {pal01[0],pal01[1],pal01[2],pal01[3]};
-    color_02 = {pal10[0],pal10[1],pal10[2],pal10[3]};
-    color_03 = {pal11[0],pal11[1],pal11[2],pal11[3]};
+    currentGridat = NESOB.PPUmemory[(nametableAddr2 + 0x3C0) + currentGrid];
+    palLocate = palLocLookup[(currentGridat[currentBlock + 1] * 2) + currentGridat[currentBlock]];
+    bgcol = NESOB.PPUmemory[0x3F00] * 3;
+    pal[0] = pallete[bgcol];
+    pal[1] = pallete[bgcol + 1];
+    pal[2] = pallete[bgcol + 2];
+    bgcol = NESOB.PPUmemory[palLocate] * 3;
+    pal[4] = pallete[bgcol];
+    pal[5] = pallete[bgcol + 1];
+    pal[6] = pallete[bgcol + 2];
+    bgcol = NESOB.PPUmemory[palLocate + 1] * 3;
+    pal[8] = pallete[bgcol];
+    pal[9] = pallete[bgcol + 1];
+    pal[10] = pallete[bgcol + 2];
+    bgcol = NESOB.PPUmemory[palLocate + 2] * 3;
+    pal[12] = pallete[bgcol];
+    pal[13] = pallete[bgcol + 1];
+    pal[14] = pallete[bgcol + 2];
 }
 uint8_t palResult;
 void chooseRenderColor()
@@ -262,30 +185,31 @@ void chooseRenderColor()
     }
     if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 0)
     {
-        SDL_SetRenderDrawColor(renderer,color_00.r,color_00.g,color_00.b,color_00.a);
         palResult = 0;
     }
     if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 0)
     {
-        SDL_SetRenderDrawColor(renderer,color_01.r,color_01.g,color_01.b,color_01.a);
         palResult = 1;
     }
     if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 1)
     {
         palResult = 2;
-        SDL_SetRenderDrawColor(renderer,color_02.r,color_02.g,color_02.b,color_02.a);
     }
     if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 1)
     {
         palResult = 3;
-        SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
 }
 uint8_t xpixti;
 uint8_t ypixti;
+uint8_t curBlolookup[4] = {0,2,4,6};
+uint8_t palBlolookup[4] = {0,1,2,3};
+uint8_t currentblockx2;
+uint8_t currentblocky2;
 void chooseRenderColorREWRITE()
 {
     //handleBlock();
+    prevBlock = currentBlock;
     xpixti = xpix / 8;
     ypixti = ypix / 8;
     currentblockx = xpix / 16;
@@ -293,73 +217,35 @@ void chooseRenderColorREWRITE()
     currentgridx = xpix / 32;
     currentgridy = ypix / 32;
     currentGrid = currentgridx + currentgridy * 8;
-    currentblockx = (xpixti / 2) % 2;
-    currentblocky = (ypixti / 2) % 2;
-    if(currentblockx == 0 && currentblocky == 0)
-    {
-        currentBlock = 0;
-    }
-    if(currentblockx == 1 && currentblocky == 0)
-    {
-        currentBlock = 2;
-    }
-    if(currentblockx == 0 && currentblocky == 1)
-    {
-        currentBlock = 4;
-    }
-    if(currentblockx == 1 && currentblocky == 1)
-    {
-        currentBlock = 6;
-    }
+    currentblockx2 = currentblockx % 2;
+    currentblocky2 = currentblocky % 2;
+    currentBlock = curBlolookup[(currentblocky2 * 2) + currentblockx2];
     if(prevBlock != currentBlock)
     {
         palDetermineREWRITE();
     }
-    if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 0)
-    {
-        SDL_SetRenderDrawColor(renderer,color_00.r,color_00.g,color_00.b,color_00.a);
-        palResult = 0;
-    }
-    if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 0)
-    {
-        SDL_SetRenderDrawColor(renderer,color_01.r,color_01.g,color_01.b,color_01.a);
-        palResult = 1;
-    }
-    if(graphicline[bitcount] == 0 && graphicline2[bitcount] == 1)
-    {
-        palResult = 2;
-        SDL_SetRenderDrawColor(renderer,color_02.r,color_02.g,color_02.b,color_02.a);
-    }
-    if(graphicline[bitcount] == 1 && graphicline2[bitcount] == 1)
-    {
-        palResult = 3;
-        SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
-    }
+    palResult = palBlolookup[(graphicline2[bitcount] * 2) + graphicline[bitcount]];
 }
 bool tempfixrender;
 uint8_t ypix2;
 uint16_t palLocateS;
 std::bitset<8> OAMbitbuffer;
 bool dontRenderSprite;
+uint16_t palLocateLook[4] = {0x3F11, 0x3F15, 0x3F19, 0x3F1D};
+uint8_t bgSto;
+uint32_t bgPal;
+void getBGcolor()
+{
+    bgSto = NESOB.PPUmemory[0x3F00];
+    bgPal = pallete[bgSto * 3] << 24 | pallete[(bgSto * 3) + 1] << 16 | pallete[(bgSto * 3) + 2] << 8 | 0xFF;
+    //printf("bgpal 0x%X\n",bgPal);
+    //printf("bgSto 0x%X\n",bgSto);
+}
+uint8_t sprResult;
 void chooseRenderColorSprite(uint8_t spritePal)
 {
     OAMbitbuffer = spritePal;
-    if(OAMbitbuffer[1] == 0 && OAMbitbuffer[0] == 0)
-    {
-        palLocateS = 0x3F11;
-    }
-    if(OAMbitbuffer[1] == 0 && OAMbitbuffer[0] == 1)
-    {
-        palLocateS = 0x3F15;
-    }
-    if(OAMbitbuffer[1] == 1 && OAMbitbuffer[0] == 0)
-    {
-        palLocateS = 0x3F19;
-    }
-    if(OAMbitbuffer[1] == 1 && OAMbitbuffer[0] == 1)
-    {
-        palLocateS = 0x3F1D;
-    }
+    palLocateS = palLocateLook[(OAMbitbuffer[1] * 2) + OAMbitbuffer[0]];
     bgcolS = NESOB.PPUmemory[0x3F10];
     bgcolS = bgcolS * 3;
     pal00S[0] = pallete[bgcolS];
@@ -405,10 +291,12 @@ void chooseRenderColorSprite(uint8_t spritePal)
     {
         SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
+    sprResult = (graphicline2S[bitcountS] * 2) + graphiclineS[bitcountS];
 }
 uint32_t curPixx;
 uint32_t curPixy;
-uint32_t pixels[512 * 256];
+uint32_t pixels[512 * 240];
+uint32_t pixelsScan28[256 * 480];
 uint32_t pixels2400[256 * 256];
 std::bitset<8> flipBitBuffer;
 int8_t helpXflip;
@@ -424,6 +312,29 @@ uint16_t currentSprite = 0;
 uint8_t spriteYpos;
 uint16_t spritePatIndex;
 uint8_t minus16val;
+bool dontbreaksp0;
+int renderPixS()
+{
+    if(dontRenderSprite == true)
+    {
+        return 0;
+    }
+    if(dontRenderSprite != true && spriteAtt[5] == 0)
+    {
+        SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
+        return 0;
+    }
+    if(pixels[ (ypixS * 512) + xpixS ] == bgPal)
+    {
+        //printf("tesst\n");
+        SDL_RenderDrawPoint(renderer,xpixS,ypixS);
+        sprite0 = false;
+        return 0;
+    }
+    return 0;
+}
+bool have16;
+bool dontTwi;
 int renderSprite()
 {
         while(ypixS != help2)
@@ -434,11 +345,8 @@ int renderSprite()
             while(xpixS != help1)
             {
                 chooseRenderColorSprite(spriteAttributes);
-
-                if(dontRenderSprite != true)
-                {
-                    SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
-                }
+                //SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0x00);
+                renderPixS();
                 xpixS++;
                 bitcountS--;
                 dontRenderSprite = false;
@@ -453,6 +361,14 @@ int renderSprite()
             spritePatIndex++;
             //printf("curSpr:0x%X\n", currentSprite);
         }
+        if(spriteSize == 1 && dontTwi == false)
+        {
+            spritePatIndex += 8;
+            help2 += 8;
+            help1 = spriteXpos + 8;
+            dontTwi = true;
+            renderSprite();
+        }
         return 0;
 }
 int renderHFLIPSprite()
@@ -460,7 +376,6 @@ int renderHFLIPSprite()
         help1 = spriteXpos - 1;
         xpixS = spriteXpos;
         xpixS += 7;
-
         while(ypixS != help2)
         {
             graphiclineS = NESOB.PPUmemory[spritePatIndex];
@@ -469,11 +384,8 @@ int renderHFLIPSprite()
             while(xpixS != help1)
             {
                 chooseRenderColorSprite(spriteAttributes);
-
-                if(dontRenderSprite != true)
-                {
-                    SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
-                }
+                //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0x00);
+                renderPixS();
                 xpixS--;
                 bitcountS--;
                 dontRenderSprite = false;
@@ -489,11 +401,19 @@ int renderHFLIPSprite()
             spritePatIndex++;
             //printf("curSpr:0x%X\n", currentSprite);
         }
+        if(spriteSize == 1 && dontTwi == false)
+        {
+            dontTwi = true;
+            spritePatIndex += 8;
+            help2 += 8;
+            xpixS = spriteXpos + 8;
+            help1 = spriteXpos;
+            renderHFLIPSprite();
+        }
         return 0;
 }
 int renderVFLIPSprite()
 {
-
         spritePatIndex += 7;
         while(ypixS != help2)
         {
@@ -503,11 +423,8 @@ int renderVFLIPSprite()
             while(xpixS != help1)
             {
                 chooseRenderColorSprite(spriteAttributes);
-
-                if(dontRenderSprite != true)
-                {
-                    SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
-                }
+                //SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0xFF, 0x00);
+                renderPixS();
                 xpixS++;
                 bitcountS--;
                 dontRenderSprite = false;
@@ -521,6 +438,42 @@ int renderVFLIPSprite()
             bitcountS = 7;
             spritePatIndex--;
             //printf("curSpr:0x%X\n", currentSprite);
+        }
+        return 0;
+}
+int renderVSprite16()
+{
+        while(ypixS != help2)
+        {
+            graphiclineS = NESOB.PPUmemory[spritePatIndex];
+            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+
+            while(xpixS != help1)
+            {
+                chooseRenderColorSprite(spriteAttributes);
+                //SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0x00);
+                renderPixS();
+                xpixS++;
+                bitcountS--;
+                dontRenderSprite = false;
+                //printf("xpix:0x%X\n", xpixS);
+                //printf("sprXpos:0x%X\n", spriteXpos + 8);
+            }
+            helpXflip = 8;
+            ypixS -= 1;
+            xpixS = spriteXpos;
+            //spriteXflip = xpixS + 7;
+            bitcountS = 7;
+            spritePatIndex++;
+            //printf("curSpr:0x%X\n", currentSprite);
+        }
+        if(spriteSize == 1 && dontTwi == false)
+        {
+            spritePatIndex += 8;
+            help2 -= 8;
+            help1 = spriteXpos + 8;
+            dontTwi = true;
+            renderVSprite16();
         }
         return 0;
 }
@@ -538,11 +491,8 @@ int renderHVFLIPSprite()
             while(xpixS != help1)
             {
                 chooseRenderColorSprite(spriteAttributes);
-
-                if(dontRenderSprite != true)
-                {
-                    SDL_RenderDrawPoint(renderer,xpixS,ypixS); // Middle
-                }
+                //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0x00);
+                renderPixS();
                 xpixS--;
                 bitcountS--;
                 dontRenderSprite = false;
@@ -557,6 +507,47 @@ int renderHVFLIPSprite()
             bitcountS = 7;
             spritePatIndex--;
             //printf("curSpr:0x%X\n", currentSprite);
+        }
+        return 0;
+}
+int renderHVFLIPSprite16()
+{
+        help1 = spriteXpos - 1;
+        xpixS = spriteXpos;
+        xpixS += 7;
+        while(ypixS != help2)
+        {
+            graphiclineS = NESOB.PPUmemory[spritePatIndex];
+            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+
+            while(xpixS != help1)
+            {
+                chooseRenderColorSprite(spriteAttributes);
+                //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0x00);
+                renderPixS();
+                xpixS--;
+                bitcountS--;
+                dontRenderSprite = false;
+                //printf("xpix:0x%X\n", xpixS);
+                //printf("sprXpos:0x%X\n", spriteXpos + 8);
+            }
+            helpXflip = 8;
+            ypixS -= 1;
+            xpixS = spriteXpos;
+            xpixS += 7;
+            //spriteXflip = xpixS + 7;
+            bitcountS = 7;
+            spritePatIndex++;
+            //printf("curSpr:0x%X\n", currentSprite);
+        }
+        if(spriteSize == 1 && dontTwi == false)
+        {
+            dontTwi = true;
+            spritePatIndex += 8;
+            help2 -= 8;
+            xpixS = spriteXpos + 8;
+            help1 = spriteXpos;
+            renderHVFLIPSprite16();
         }
         return 0;
 }
@@ -691,12 +682,13 @@ int handleSprites()
     // Begin Sprite Code
     ypixS = 0;
     xpixS = 0;
+    sprite0 = true;
     currentSprite = 0;
     spriteYpos = OAMmem[0];
     tempBitBuffer2 = OAMmem[1];
     if(spriteSize == 1)
     {
-        tempBitBuffer2[0] == 0;
+        tempBitBuffer2[0] = 0;
     }
     spritePatIndex = tempBitBuffer2.to_ulong() << 4;
     tempBitBuffer = OAMmem[1];
@@ -710,6 +702,7 @@ int handleSprites()
     }
     flipBitBuffer = OAMmem[2];
     spriteAttributes = OAMmem[2];
+    spriteAtt = OAMmem[2];
     spriteXpos = OAMmem[3];
     help1 = spriteXpos + 8;
     help2 = spriteYpos + 8;
@@ -723,82 +716,73 @@ int handleSprites()
     //printf("spriteY: 0x%X\n",spriteYpos);
     //printf("spriteX: 0x%X\n",spriteXpos);
     bitcountS = 7;
+    getBGcolor();
     while(currentSprite != 0x100)
     {
+        if(spriteYpos > 240)
+        {
+            goto noDrawSprite;
+        }
         if(flipBitBuffer[6] == 0 && flipBitBuffer[7] == 0)
         {
+            dontTwi = false;
             renderSprite();
-            if(spriteSize == 1)
-            {
-                xpixS = spriteXpos;
-                help1 = spriteXpos + 8;
-                help2 = spriteYpos + 16;
-                spritePatIndex += 8;
-                ypixS = spriteYpos + 8;
-                spriteYpos += 8;
-                bitcountS = 7;
-
-                renderSprite();
-            }
         }
         if(flipBitBuffer[6] == 1 && flipBitBuffer[7] == 0)
         {
+            have16 = false;
+            dontTwi = false;
             renderHFLIPSprite();
-            if(spriteSize == 1)
-            {
-                xpixS = spriteXpos + 8;
-                help1 = spriteXpos;
-                help2 = spriteYpos + 16;
-                spritePatIndex += 8;
-                ypixS = spriteYpos + 8;
-                spriteYpos += 8;
-                bitcountS = 7;
-                renderHFLIPSprite();
-            }
         }
         if(flipBitBuffer[6] == 0 && flipBitBuffer[7] == 1)
         {
-            renderVFLIPSprite();
+            dontTwi = false;
+            if(spriteSize == 0)
+            {
+                renderVFLIPSprite();
+            }
             if(spriteSize == 1)
             {
-                xpixS = spriteXpos;
-                help1 = spriteXpos + 8;
-                help2 = spriteYpos + 16;
-                spritePatIndex += 10;
-                ypixS = spriteYpos + 8;
-                spriteYpos += 8;
-                bitcountS = 7;
-                renderVFLIPSprite();
+                dontTwi = false;
+                spriteXpos = OAMmem[currentSprite + 3];
+                spriteYpos = OAMmem[currentSprite];
+                ypixS = spriteYpos + 16;
+                help2 = spriteYpos + 8;
+                renderVSprite16();
             }
         }
         if(flipBitBuffer[6] == 1 && flipBitBuffer[7] == 1)
         {
-            renderHVFLIPSprite();
-            if(spriteSize == 1)
+            dontTwi = false;
+            if(spriteSize == 0)
             {
-                xpixS = spriteXpos + 8;
-                help1 = spriteXpos;
-                help2 = spriteYpos + 16;
-                spritePatIndex += 10;
-                ypixS = spriteYpos + 8;
-                spriteYpos += 8;
-                bitcountS = 7;
                 renderHVFLIPSprite();
             }
+            if(spriteSize == 1)
+            {
+                dontTwi = false;
+                spriteXpos = OAMmem[currentSprite + 3];
+                spriteYpos = OAMmem[currentSprite];
+                ypixS = spriteYpos + 16;
+                help2 = spriteYpos + 8;
+                renderHVFLIPSprite16();
+            }
         }
+        noDrawSprite:
         currentSprite += 4;
-        if(currentSprite == 0xFC)
+        if(currentSprite == 0x100)
         {
             //printf("wowie\n");
             return 0;
         }
+        sprite0 = false;
         spriteYpos = OAMmem[currentSprite];
         tempBitBuffer = OAMmem[currentSprite + 1];
         //spritePatIndex = OAMmem[currentSprite + 1] << 4;
         tempBitBuffer2 = OAMmem[currentSprite + 1];
         if(spriteSize == 1)
         {
-            tempBitBuffer2[0] == 0;
+            tempBitBuffer2[0] = 0;
         }
         spritePatIndex = tempBitBuffer2.to_ulong() << 4;
         if(sprite1000 == 1 && spriteSize == 0) // If the bank 1000 bit is set in sprite, use 0x1000 sprites instead.
@@ -811,7 +795,9 @@ int handleSprites()
         }
         flipBitBuffer = OAMmem[currentSprite + 2];
         spriteAttributes = OAMmem[currentSprite + 2];
+        spriteAtt = OAMmem[currentSprite + 2];
         spriteXpos = OAMmem[currentSprite + 3];
+        dontbreaksp0 = false;
         help1 = spriteXpos + 8;
         help2 = spriteYpos + 8;
         ypixS = spriteYpos;
@@ -1046,17 +1032,51 @@ int handleGraphicsBASIC()
     return 0;
 }
 std::bitset<9> bit916convert;
+uint16_t vTran;
+uint8_t dummy8;
+uint8_t yscro8;
+uint16_t xS9bit;
+bool dontRenderline;
 int handleGraphicsBASICSCAN()
 {
     ppurendercount = 2;
-    nametableAddr2 = 0x2000;
-    if(nametableuse == 1 || nametableuse == 3)
+    //printf("Scrolly: %X\n",scrolly);
+    if(nametableuse == 0)
+    {
+        nametableAddr2 = 0x2000;
+    }
+    if(nametableuse == 1)
     {
         nametableAddr2 = 0x2400;
     }
+    if(nametableuse == 2)
+    {
+        nametableAddr2 = 0x2000;
+    }
+    if(nametableuse == 3)
+    {
+        nametableAddr2 = 0x2400;
+    }
+    if(nametableuse == 0 && MMC3mirror == true)
+    {
+        nametableAddr2 = 0x2000;
+    }
+    if(nametableuse == 1 && MMC3mirror == true)
+    {
+        nametableAddr2 = 0x2000;
+    }
+    if(nametableuse == 2 && MMC3mirror == true)
+    {
+        nametableAddr2 = 0x2800;
+    }
+    if(nametableuse == 3 && MMC3mirror == true)
+    {
+        nametableAddr2 = 0x2800;
+    }
+    //printf("Nametable1: 0x%X\n",nametableAddr2);
     while(ppurendercount != 0)
     {
-    uint8_t Xcounter = 32;
+    Xcounter = 32;
     bitcount = 7;
     tiledatalocation1 = nametableAddr2 + (NESOB.scanline / 8) * 32;
     tilelocation = NESOB.PPUmemory[tiledatalocation1];
@@ -1068,6 +1088,11 @@ int handleGraphicsBASICSCAN()
     ypixtile = 0;
     xpixtile2 = 0;
     ypixtile2 = 0;
+    if(MMC3mirror == true)
+    {
+        //nametableAddr2 = 0x2800;
+            //printf("NEWNAMETABLE");
+    }
     if(bgpattable == true)
     {
         tilecount += 0x1000;
@@ -1079,41 +1104,82 @@ int handleGraphicsBASICSCAN()
                 while(xpixtile2 != 8)
                 {
                     chooseRenderColorREWRITE();
-                    xpixsc = xpix - scrollx;
-                    curPixx = xpixsc;
-                    if(nametableAddr2 == 0x2400 && nametableuse == 0)
+                    xS9bit = xpix - scrollx;
+                    xS9bit = xS9bit & 511;
+                    curPixx = xS9bit;
+                    if(ppurendercount == 1 && MMC3mirror == false)
                     {
-                        curPixx = curPixx + 256;
+                        if(nametableAddr2 == 0x2400 || nametableAddr2 == 0x2000)
+                        {
+                            curPixx = curPixx + 256;
+                        }
                     }
-                    if(nametableAddr2 == 0x2000 && nametableuse == 1)
+                    if(ppurendercount == 1 && MMC3mirror == true)
                     {
-                        curPixx = curPixx + 256;
+                        if(nametableAddr2 == 0x2800 || nametableAddr2 == 0x2000)
+                        {
+                            curPixx = 256 * 240;
+                            dummy8 = xpix;
+                            dummy8 -= scrollx;
+                            curPixx += dummy8;
+                        }
                     }
-                    bit916convert = curPixx;
-                    curPixx = bit916convert.to_ulong();
-                    if(NESOB.scanline <= 255)
+                    if(ppurendercount == 2 && MMC3mirror == true)
                     {
-                        curPixx += (ypix) * 512;
+                        dummy8 = xpix;
+                        dummy8 -= scrollx;
+                        curPixx = dummy8;
                     }
-                    else
+                    if(MMC3mirror == false)
                     {
-                        curPixx += 255 * 512;
+                        curPixx = curPixx & 511;
+                        if(NESOB.scanline < 240)
+                        {
+                            if(scrolly > 240)
+                            {
+                                scrolly = 0;
+                            }
+                            yscro8 = NESOB.scanline;
+                            if(yscro8 > 239)
+                            {
+                                yscro8 -= 239;
+                            }
+                            curPixx += yscro8 * 512;
+                        }
+                        if(NESOB.scanline >= 240)
+                        {
+                            if(NESOB.scanline == 260)
+                            {
+                                goto doneRenderFrame;
+                            }
+                            return 0;
+                            curPixx += 239 * 512;
+                        }
                     }
-                    if (palResult == 0)
+                    if(MMC3mirror == true)
                     {
-                        pixels[curPixx] = pal00[0] << 24 | pal00[1] << 16 | pal00[2] << 8 | pal00[3];
+                        if(NESOB.scanline < 240)
+                        {
+                            yscro8 = NESOB.scanline;
+                            curPixx += yscro8 * 256;
+                        }
+                        if(NESOB.scanline >= 240)
+                        {
+                            if(NESOB.scanline == 260)
+                            {
+                                goto doneRenderFrame;
+                            }
+                            return 0;
+                            curPixx += 479 * 256;
+                        }
                     }
-                    if (palResult == 1)
+                    if(MMC3mirror == false)
                     {
-                        pixels[curPixx] = pal01[0] << 24 | pal01[1] << 16 | pal01[2] << 8 | pal01[3];
+                        pixels[curPixx] = pal[0 + palResult * 4] << 24 | pal[1 + palResult * 4] << 16 | pal[2 + palResult * 4] << 8;
                     }
-                    if (palResult == 2)
+                    if(MMC3mirror == true)
                     {
-                        pixels[curPixx] = pal10[0] << 24 | pal10[1] << 16 | pal10[2] << 8 | pal10[3];
-                    }
-                    if (palResult == 3)
-                    {
-                        pixels[curPixx] = pal11[0] << 24 | pal11[1] << 16 | pal11[2] << 8 | pal11[3];
+                        pixelsScan28[curPixx] = pal[0 + palResult * 4] << 24 | pal[1 + palResult * 4] << 16 | pal[2 + palResult * 4] << 8;
                     }
                     xpix++;
                     bitcount--;
@@ -1127,51 +1193,89 @@ int handleGraphicsBASICSCAN()
             tilelocation = NESOB.PPUmemory[tiledatalocation1];
             tilecount = tilelocation << 4;
             tilecount = tilecount + NESOB.scanline % 8;
-            if(bgpattable == true)
-            {
-                tilecount += 0x1000;
-            }
+            //if(bgpattable == true)
+           // {
+            //    tilecount += 0x1000;
+            //}
+            tilecount += bgpattable * 0x1000;
 
         }
         currentnametable = 0;
         ppurendercount -= 1;
-        nametableAddr2 = 0x2400;
-        if(nametableuse == 1 || nametableuse == 3)
+        if(nametableuse == 0 && MMC3mirror == false)
+        {
+            nametableAddr2 = 0x2400;
+        }
+        if(nametableuse == 1 && MMC3mirror == false)
         {
             nametableAddr2 = 0x2000;
         }
+        if(nametableuse == 2 && MMC3mirror == false)
+        {
+            nametableAddr2 = 0x2400;
+        }
+        if(nametableuse == 3 && MMC3mirror == false)
+        {
+            nametableAddr2 = 0x2000;
+        }
+        if(nametableuse == 0 && MMC3mirror == true)
+        {
+            nametableAddr2 = 0x2800;
+        }
+        if(nametableuse == 1 && MMC3mirror == true)
+        {
+            nametableAddr2 = 0x2800;
+        }
+        if(nametableuse == 2 && MMC3mirror == true)
+        {
+            nametableAddr2 = 0x2000;
+        }
+        if(nametableuse == 3 && MMC3mirror == true)
+        {
+            nametableAddr2 = 0x2000;
+        }
+        //printf("Nametable2: 0x%X\n",nametableAddr2);
     }
-    if(NESOB.scanline == 260)
+    //printf("Nametableuse: %i\n",nametableuse);
+    doneRenderFrame:
+    if(NESOB.scanline == 260 && MMC3mirror == false)
     {
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("Nametableuse: %i\n",nametableuse);
+    blitsu = 2048;
     mainScreen.w = 512;
-    mainScreen.h = 256;
+    mainScreen.h = 240;
     mainScreen.x = 0;
-    mainScreen.y = 0;
+    mainScreen.y = 0 - scrolly;
     SDL_UpdateTexture(textureScanline, NULL, pixels, blitsu);
     SDL_RenderCopy(renderer, textureScanline, NULL, &mainScreen);
     handleSprites();
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF,0,0);
+    //SDL_RenderDrawLine(renderer, 0,175,512,175);
     SDL_RenderPresent(renderer);
     currentPPUFrame++;
-    SDL_SetRenderDrawColor(renderer,0x00,0x00,0xFF,0xFF);
-    SDL_RenderClear(renderer);
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0x00,0,0);
+    //SDL_RenderClear(renderer);
     }
-
-    //printf("ScrollX: 0x%X\n",scrollx);
-    //printf("ScrollY: 0x%X\n",scrolly);
-    //printf("Current PPU Frame: %i\n",currentPPUFrame);
-    /*
-    while(true)
+    if(NESOB.scanline == 260 && MMC3mirror == true)
     {
-        if(newFrame == true)
-        {
-            newFrame = false;
-            handleGraphicsBASICSCAN();
-        }
-        if(exitLoop == true)
-        {
-            return 0;
-        }
+    blitsu = 1024;
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("Nametableuse: %i\n",nametableuse);
+    mainScreen.w = 256;
+    mainScreen.h = 480;
+    mainScreen.x = 0;
+    mainScreen.y = 0 - scrolly;
+    SDL_UpdateTexture(textureScanline28, NULL, pixelsScan28, blitsu);
+    SDL_RenderCopy(renderer, textureScanline28, NULL, &mainScreen);
+    handleSprites();
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF,0,0);
+    //SDL_RenderDrawLine(renderer, 0,175,512,175);
+    SDL_RenderPresent(renderer);
+    currentPPUFrame++;
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0x00,0,0);
+    //SDL_RenderClear(renderer);
     }
-    */
-    return 0;
 }

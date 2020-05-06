@@ -1,0 +1,13 @@
+Doesn't work:
+Somari (BOOTLEG) - Stuck on title screen, waiting for vblank?
+
+Gameplay Problems:
+Kid Icarus - Controls are fucked, reason unknown
+
+Graphics Problems:
+Dig-Dug - Using the wrong nametable, reason unknown
+Ducktales - Sprites are broken, need ability to change sprite tile data per scanline
+Kirby's Adventure - Bottom hud is missing, pause screen is somewhat broken, needs MMC3irq
+Super Mario Bros 2 - Some scrolling is broken, reason unknown
+Super Mario Bros 3 - Bottom hud is broken, needs MMC3irq
+Super Mario World (NES BOOTLEG) - Title screen scrolling is broken and hud is broken, needs scanline irq's

@@ -1,15 +1,155 @@
 #include "graphics.hpp"
-int throttleCPUval = 0;
+uint8_t registerArray[13];
+FILE* savestate = NULL;
+FILE* saveload = NULL;
+void saveNESstate()
+{
+            if(savestatename[0] == NULL)
+            {
+                cout<<"Type name for save state."<<endl;
+                cin>>savestatename;
+            }
+            savestate = fopen(savestatename,"w+");
+            fwrite(NESOB.memory,sizeof(uint8_t),0xFFFF,savestate);
+            //fwrite(NESOB.PPUmemory,sizeof(uint8_t),0x4000,savestate);
+            //fwrite(OAMmem,sizeof(uint8_t),0x100,savestate);
+            registerArray[0] = NESOB.pc >> 8;
+            registerArray[1] = NESOB.pc;
+            registerArray[2] = NESOB.sp;
+            registerArray[3] = NESOB.a;
+            registerArray[4] = NESOB.x;
+            registerArray[5] = NESOB.y;
+            registerArray[6] = NESOB.pflag;
+            registerArray[7] = NESOB.cycles >> 24;
+            registerArray[8] = NESOB.cycles >> 16;
+            registerArray[9] = NESOB.cycles >> 8;
+            registerArray[10] = NESOB.cycles;
+            registerArray[11] = NESOB.scanline >> 8;
+            registerArray[12] = NESOB.scanline;
+            fwrite(registerArray,sizeof(uint8_t),13,savestate);
+            fclose(savestate);
+            cout<<"State Saved!"<<endl;
+            //breakpoint = true;
+}
+void loadNESstate()
+{
+            if(savestatename[0] == NULL)
+            {
+                cout<<"Type name for save state."<<endl;
+                cin>>savestatename;
+            }
+            saveload = fopen(savestatename,"w+");
+            fread(NESOB.memory,sizeof(uint8_t),0xFFFF,saveload);
+            //fread(NESOB.PPUmemory,sizeof(uint8_t),0x4000,saveload);
+            //fread(OAMmem,sizeof(uint8_t),0x100,saveload);
+            fread(registerArray,sizeof(uint8_t),13,saveload);
+            fclose(saveload);
+            NESOB.pc = registerArray[0] << 8 | registerArray[1];
+            NESOB.sp = registerArray[2];
+            NESOB.a = registerArray[3];
+            NESOB.x = registerArray[4];
+            NESOB.y = registerArray[5];
+            NESOB.pflag = registerArray[6];
+            NESOB.cycles = registerArray[7] << 24 | registerArray[8] << 16 | registerArray[9] << 8 | registerArray[10];
+            NESOB.scanline = registerArray[11] << 8 | registerArray[12];
+            cout<<"State Loaded!"<<endl;
+            fclose(saveload);
+}
 int handleControlsr()
 {
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
 
+        case SDLK_t:
+            handleCorruptorKey();
+        break;
+
+        case SDLK_8:
+            Mix_Pause(0);
+            bit4 = sq1enable;
+            bit4.flip(0);
+            sq1enable = bit4.to_ulong();
+        break;
+
+        case SDLK_9:
+            Mix_Pause(1);
+            bit4 = sq2enable;
+            bit4.flip(0);
+            sq2enable = bit4.to_ulong();
+        break;
+
+        case SDLK_0:
+            Mix_Pause(2);
+            bit4 = trienable;
+            bit4.flip(0);
+            trienable = bit4.to_ulong();
+        break;
+
+        case SDLK_y:
+            if(throttleMode == false)
+            {
+                throttleMode = true;
+                cout<<"Throttle Mode switched to Automatic!"<<endl;
+                break;
+            }
+            if(throttleMode == true)
+            {
+                throttleMode = false;
+                cout<<"Throttle Mode switched to Manual!"<<endl;
+                break;
+            }
+        break;
+
+        case SDLK_u:
+            if(rendererChoose == true)
+            {
+                rendererChoose = false;
+                blitsu = 1024;
+                cout<<"Switched to legacy renderer."<<endl;
+                break;
+            }
+            if(rendererChoose == false)
+            {
+                rendererChoose = true;
+                blitsu = 2048;
+                cout<<"Switched to modern renderer."<<endl;
+                break;
+            }
+        break;
+
+        case SDLK_r:
+            NESOB.sp -= 3;
+            NESOB.pflag = NESOB.pflag | 0x04;
+            NESOB.memory[0x4015] = 0;
+            NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC];
+        break;
+
+        case SDLK_b:
+            cout<<blitsu<<endl;
+            cin>>blitsu;
+        break;
+
         case SDLK_e:
-            //cin>>blitsu;
+            if(enableSound == true)
+            {
+                enableSound = false;
+                cout<<"Sound is disabled!  Press E to enable."<<endl;
+                break;
+            }
+            if(enableSound == false)
+            {
+                enableSound = true;
+                cout<<"Sound is enabled!  Press E to disable."<<endl;
+                break;
+            }
         break;
 
         case SDLK_q:
+            if(throttleMode == true)
+            {
+                cout<<"Throttle Mode is currently Automatic!"<<endl<<"Change it to manual by pressing Y!"<<endl<<"Current value is "<<throttleCPUval<<"."<<endl;
+                break;
+            }
             printf("Increase this number to slow down the Emulator.\nCurrent Value: %i\nDefault is 0\nChange throttle value to: ",throttleCPUval);
             cin>>throttleCPUval;
         break;
@@ -19,53 +159,6 @@ int handleControlsr()
             cin>>cycleModulo;
         break;
 
-        case SDLK_LEFTBRACKET:
-            //showTile = false;
-        break;
-
-        case SDLK_RIGHTBRACKET:
-            //showBlock = false;
-        break;
-
-        case SDLK_BACKSLASH:
-            showGrid = false;
-        break;
-
-        case SDLK_b:
-            //fpsBenchmark();
-        break;
-
-        case SDLK_r: // Resets the emulation (can cause bugs)
-            NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC]; // Sets Initial PC Value
-            NESOB.pflag = 0x34;
-            NESOB.sp = 0xFD;
-            NESOB.a = 0x00;
-            NESOB.x = 0x00;
-            NESOB.y = 0x00;
-            currentFrame = 0;
-        break;
-
-        //This was originally a way to reset the program, but it didn't work well and caused bugs.
-        /*
-        case SDLK_0:
-            if(beginning() == false)
-            {
-                printf("File Not Found!\n");
-                return 0;
-            }
-            NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC]; // Sets Initial PC Value
-            NESOB.pflag = 0x34;
-            NESOB.sp = 0xFD;
-            NESOB.a = 0x00;
-            NESOB.x = 0x00;
-            NESOB.y = 0x00;
-            NESOB.scanline = 0;
-            pal = fopen("pal.pal", "rb");
-            fread(pallete,192,1,pal);
-            fclose(pal);
-            currentFrame = 0;
-        break;
-        */
         case SDLK_z:
             controlBuffer[1] = 0;
         break;

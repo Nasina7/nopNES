@@ -12,9 +12,16 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-Wredundant-decls" />
+					<Add option="-Wunreachable-code" />
+					<Add option="-Wall" />
 				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/nopNES" prefix_auto="1" extension_auto="1" />
@@ -22,7 +29,9 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -34,6 +43,7 @@
 				<Option compiler="gcc_windows_i686" />
 				<Option use_console_runner="0" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-m32" />
@@ -42,6 +52,7 @@
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/include/SDL2" />
 				</Compiler>
 				<Linker>
+					<Add option="-s" />
 					<Add option="-m32" />
 					<Add option="-lSDL2" />
 					<Add option="-pthread" />
@@ -56,9 +67,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-fexpensive-optimizations" />
-			<Add option="-O3" />
-			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Linker>
@@ -76,6 +84,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

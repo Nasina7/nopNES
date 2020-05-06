@@ -1,0 +1,24 @@
+5/6/2020 Commit:
+Fixed all remaining pallete problems with horizontal scrolling.
+Added a basic save file feature
+Fixed some games that weren't booting. (Dr. Mario, Ducktales, etc...)
+Mostly Implemented a much better sounding Square Channel 1
+Mostly Implemented Square Channel 2
+Added ability to toggle sound on and off
+Fixed some problems with resetting
+Implemented a Real Time Corruptor (Kind of like the bizhawk one)
+Made emulator automatically try to stay around 60 fps
+Made scanline renderer the default
+Added ability to toggle between scanline renderer and frame renderer
+Fixed some problems with NMI implementation
+Began Preparing for Beta v0.1 release
+Fixed problem with Tetris and Kid Icarus displaying graphics, but not going in game.
+Added a WIP implementation of mapper 52
+Optimized the emulator a bit
+Fixed some problems with horizontal scrolling (Mega Man 2)
+Fixed level not displaying in some horizontal scroll games (Metroid)
+Added Horizontal Mirroring to the scanline renderer
+Added a WIP implementation of mapper 90
+Fixed a pallete bug related to Vertical scrolling
+Fixed a bug where 8x16 sprites ocasionally had wierd y coordinates
+Fixed a bug where any 8x16 vertically flipped sprites wouldn't render properly.

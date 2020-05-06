@@ -9,12 +9,16 @@ void nesPowerOn()
     NESOB.x = 0x00;
     NESOB.y = 0x00;
 }
+bool VBLFLAGcleardelay;
+uint64_t cyclesAtNMI;
 void handleNMI()
 {
     NESOB.Xbitbuffer = NESOB.memory[0x2000];
     if(NESOB.Xbitbuffer[7] == 1 && NMIrequest == true)
     {
         NMIrequest = false;
+        VBLFLAGcleardelay = true;
+        cyclesAtNMI = NESOB.cycles;
         NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
         NESOB.higherPC = NESOB.pc >> 8;
         NESOB.lowerPC = NESOB.pc;
@@ -28,19 +32,43 @@ void handleNMI()
         NESOB.pc = NESOB.memory[0xFFFB] << 8 | NESOB.memory[0xFFFA];
     }
 }
-
+bool irqGenerate;
+void handleSoundIRQ()
+{
+    tempBitBuffer = NESOB.pflag;
+    if(soundIRQ == true && tempBitBuffer[2] == 0)
+    {
+        printf("IRQ!\n");
+        soundIRQ = false;
+        tempBitBuffer[2] = 1;
+        NESOB.pflag = tempBitBuffer.to_ulong();
+        NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
+        NESOB.higherPC = NESOB.pc >> 8;
+        NESOB.lowerPC = NESOB.pc;
+        NESmemWrite(NESOB.higherPC,NESOB.tempValue16);
+        NESOB.tempValue16--;
+        NESmemWrite(NESOB.lowerPC,NESOB.tempValue16);
+        NESOB.tempValue16--;
+        NESmemWrite(NESOB.pflag,NESOB.tempValue16);
+        NESOB.tempValue16--;
+        NESOB.sp -= 3;
+        NESOB.pc = NESOB.memory[0xFFFF] << 8 | NESOB.memory[0xFFFE];
+    }
+}
 void handleInterrupts()
 {
     handleNMI();
+    //handleSoundIRQ();
 }
-int doOpcode()
+void doOpcode()
 {
-    switch (NESOB.opcode)
+    switch (NESOB.memory[NESOB.pc])
     {
 
         case 0x00:
             NESOB.pc += 2;
             //printf("0x00\n");
+            tempBitBuffer = NESOB.pflag;
             //breakpoint = true;
             NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
             NESmemWrite(NESOB.pc >> 8, NESOB.tempValue16);
@@ -100,7 +128,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
@@ -116,7 +144,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             NESOB.a = NESOB.a | NESmemRead(NESOB.tempValue16);
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
@@ -196,7 +224,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 3;
@@ -270,7 +298,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
@@ -350,7 +378,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 3;
@@ -372,6 +400,7 @@ int doOpcode()
         break;
 
         case 0x21:
+            printf("BUG 21!\n");
             NESOB.tempValue = NESOB.memory[NESOB.pc + 1] + NESOB.x;
             NESOB.tempValue162 = 0x00 << 8 | NESOB.tempValue;
             NESOB.tempValue2 = NESOB.memory[NESOB.tempValue162];
@@ -408,7 +437,7 @@ int doOpcode()
             handleFlags7(NESOB.a,NESOB.prevValue);
             handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 3;
         break;
 
         case 0x26:
@@ -542,7 +571,7 @@ int doOpcode()
             NESOB.Pbitbuffer = NESOB.pflag;
             NESOB.Abitbuffer[0] = NESOB.Pbitbuffer[0];
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
-            NESOB.memory[NESOB.tempValue16] = NESOB.Abitbuffer.to_ulong();
+            NESmemWrite(NESOB.Abitbuffer.to_ulong(), NESOB.tempValue16);
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             handleFlags7(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
@@ -602,7 +631,7 @@ int doOpcode()
             handleFlags7(NESOB.a,NESOB.prevValue);
             handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 4;
         break;
 
         case 0x36:
@@ -623,7 +652,7 @@ int doOpcode()
             NESOB.Abitbuffer[0] = NESOB.Xbitbuffer[7];
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            NESOB.memory[NESOB.tempValue16] = NESOB.Abitbuffer.to_ulong();
+            NESmemWrite(NESOB.Abitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
             NESOB.pc += 2;
@@ -682,7 +711,7 @@ int doOpcode()
             NESOB.Pbitbuffer = NESOB.pflag;
             NESOB.Abitbuffer[0] = NESOB.Pbitbuffer[0];
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
-            NESOB.memory[NESOB.tempValue16] = NESOB.Abitbuffer.to_ulong();
+            NESmemWrite(NESOB.Abitbuffer.to_ulong(), NESOB.tempValue16);
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             handleFlags7(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16], NESOB.prevValue);
@@ -741,7 +770,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer >> 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
@@ -837,7 +866,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer >> 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 3;
@@ -911,7 +940,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer >> 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;
@@ -969,7 +998,7 @@ int doOpcode()
             NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[0];
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESOB.Xbitbuffer = NESOB.Xbitbuffer >> 1;
-            NESOB.memory[NESOB.tempValue16] = NESOB.Xbitbuffer.to_ulong();
+            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 3;
@@ -985,6 +1014,7 @@ int doOpcode()
         break;
 
         case 0x61:
+            printf("BUG 61!\n");
             NESOB.tempValue = NESOB.memory[NESOB.pc + 1] + NESOB.x;
             NESOB.tempValue162 = 0x00 << 8 | NESOB.tempValue;
             NESOB.tempValue2 = NESOB.memory[NESOB.tempValue162];
@@ -1250,7 +1280,7 @@ int doOpcode()
             NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             handleFlags7(NESOB.a, a);
             NESOB.pc += 2;
-            NESOB.cycles += 3;
+            NESOB.cycles += 4;
         break;
 
         case 0x76:
@@ -1380,7 +1410,7 @@ int doOpcode()
             }
             NESOB.tempValue = NESmemRead(NESOB.tempValue162);
             NESOB.tempValue16 = NESOB.tempValue << 8 | NESOB.tempValue2;
-            NESOB.memory[NESOB.tempValue16] = NESOB.a;
+            NESmemWrite(NESOB.a, NESOB.tempValue16);
             NESOB.pc += 2;
             NESOB.cycles += 6;
         break;
@@ -1564,6 +1594,7 @@ int doOpcode()
         break;
 
         case 0xA1:
+            //printf("BUG A1!\n");
             //breakpoint = true;
             /*
             NESOB.tempValue162 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
@@ -1589,7 +1620,7 @@ int doOpcode()
             NESOB.tempValue16 = NESOB.tempValue << 8 | NESOB.tempValue2;
             //printf("tempVal16: 0x%X\n",NESOB.tempValue16);
             NESOB.prevValue = NESOB.a;
-            NESOB.a = NESOB.memory[NESOB.tempValue16];
+            NESOB.a = NESmemRead(NESOB.tempValue16);
             handleFlags7(NESOB.a, NESOB.prevValue);
             handleFlags1(NESOB.a, NESOB.prevValue);
             NESOB.pc += 2;
@@ -1622,7 +1653,7 @@ int doOpcode()
             handleFlags7(NESOB.a,NESOB.prevValue);
             handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 3;
         break;
 
         case 0xA6:
@@ -1632,7 +1663,7 @@ int doOpcode()
             handleFlags7(NESOB.x,NESOB.prevValue);
             handleFlags1(NESOB.x,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 3;
         break;
 
         case 0xA8:
@@ -1691,6 +1722,7 @@ int doOpcode()
         case 0xAD:
             NESOB.prevValue = NESOB.a; // Load PrevValue with A.
             NESOB.tempValue16 = NESOB.memory[NESOB.pc + 2] << 8 | NESOB.memory[NESOB.pc + 1];
+            //printf("test: 0x%X\n",NESOB.memory[NESOB.pc + 2] << 8 | NESOB.memory[NESOB.pc + 1]);
             NESOB.a = NESmemRead(NESOB.tempValue16); // Load data in memory at location stored at pc+1 and pc+2.
             handleFlags7(NESOB.a,NESOB.prevValue); // Handles the flags
             handleFlags1(NESOB.a,NESOB.prevValue); // Handles the flags
@@ -1767,7 +1799,7 @@ int doOpcode()
             handleFlags7(NESOB.a,NESOB.prevValue);
             handleFlags1(NESOB.a,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 4;
         break;
 
         case 0xB6:
@@ -1782,7 +1814,7 @@ int doOpcode()
             handleFlags7(NESOB.x,NESOB.prevValue);
             handleFlags1(NESOB.x,NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 4;
         break;
 
         case 0xB8:
@@ -1908,7 +1940,7 @@ int doOpcode()
             handleFlags7(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             handleFlags1(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 5;
         break;
 
         case 0xC8:
@@ -2052,7 +2084,7 @@ int doOpcode()
             handleFlags7(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             handleFlags1(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 6;
         break;
 
         case 0xD8:
@@ -2107,7 +2139,7 @@ int doOpcode()
             handleFlags7(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             handleFlags1(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             NESOB.pc += 3;
-            NESOB.cycles += 6;
+            NESOB.cycles += 7;
         break;
 
         case 0xE0:
@@ -2161,7 +2193,7 @@ int doOpcode()
             handleFlags1(NESOB.tempValue, NESOB.prevValue);
             handleFlags0(NESOB.prevValue, NESmemRead(NESOB.tempValue16));
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 3;
         break;
 
         case 0xE5:
@@ -2191,7 +2223,7 @@ int doOpcode()
             handleFlags7(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             handleFlags1(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 5;
         break;
 
         case 0xE8:
@@ -2378,7 +2410,7 @@ int doOpcode()
             handleFlags7(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             handleFlags1(NESmemRead(NESOB.tempValue16),NESOB.prevValue);
             NESOB.pc += 2;
-            NESOB.cycles += 2;
+            NESOB.cycles += 6;
         break;
 
         case 0xF8:
@@ -2455,11 +2487,28 @@ int doOpcode()
         break;
 
         default:
+            printf("EMULATED SOFTWARE HAS CRASHED.  PRINTING DEBUG INFO...\n");
             printf("Unknown Opcode 0x%X!\n",NESOB.opcode);
             printf("Cycles: %i\n",NESOB.cycles);
             printf("Program Counter: 0x%X\n",NESOB.pc);
-            breakpoint = true;
+            printf("A:0x%X \nX:0x%X \nY:0x%X \nP:0x%X \nSP:0x%X\n",NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
+            printf("Would you like to reset? y or n.");
+            if(breakpoint == false)
+            {
+                cin>>options;
+            }
+            if(options == 'y' )
+            {
+                NESOB.sp -= 3;
+                NESOB.pflag = NESOB.pflag | 0x04;
+                NESOB.memory[0x4015] = 0;
+                NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC];
+            }
+            if(options == 'n')
+            {
+                breakpoint = true;
+            }
+            //NESOB.pc++;
         break;
     }
-    return 0;
 }

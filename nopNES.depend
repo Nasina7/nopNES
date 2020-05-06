@@ -1,11 +1,11 @@
 # depslib dependency file v1.0
-1585896401 source:/home/zach/codeblocks/nopNES/main.cpp
+1588782777 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
-1584705939 /home/zach/codeblocks/nopNES/cpu.hpp
+1588778309 /home/zach/codeblocks/nopNES/cpu.hpp
 	"Controls.hpp"
 
-1585896827 /home/zach/codeblocks/nopNES/include.hpp
+1588782440 /home/zach/codeblocks/nopNES/include.hpp
 	<iostream>
 	<string>
 	<bitset>
@@ -14,13 +14,14 @@
 	<thread>
 	"mingw.thread.h"
 	<unordered_map>
-	"tinyfiledialogs/tinyfiledialogs.h"
+	<time.h>
+	<stdlib.h>
 	<unistd.h>
 
-1585178360 /home/zach/codeblocks/nopNES/Controls.hpp
+1588435747 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
-1585148116 /home/zach/codeblocks/nopNES/graphics.hpp
+1588781912 /home/zach/codeblocks/nopNES/graphics.hpp
 	"mappers.hpp"
 
 1522244266 /usr/include/wx-3.0/wx/string.h
@@ -2240,10 +2241,10 @@
 	"begin_code.h"
 	"close_code.h"
 
-1583935697 /home/zach/codeblocks/nopNES/mappers.hpp
+1587413416 /home/zach/codeblocks/nopNES/mappers.hpp
 	"sound.hpp"
 
-1585896827 /home/zach/codeblocks/nopNES/sound.hpp
+1588782457 /home/zach/codeblocks/nopNES/sound.hpp
 	"include.hpp"
 	<SDL2/SDL_mixer.h>
 	<SDL_mixer.h>
@@ -2258,4 +2259,20 @@
 	"SDL_version.h"
 	"begin_code.h"
 	"close_code.h"
+
+1511036183 /usr/i686-w64-mingw32/include/time.h
+	<crtdefs.h>
+	<_timeval.h>
+	<sys/timeb.h>
+	<pthread_time.h>
+
+1511036183 /usr/i686-w64-mingw32/include/sys/timeb.h
+	<crtdefs.h>
+	<sec_api/sys/timeb_s.h>
+
+1511036183 /usr/i686-w64-mingw32/include/sec_api/sys/timeb_s.h
+	<sys/timeb.h>
+
+1511036183 /usr/i686-w64-mingw32/include/pthread_time.h
+	<sys/timeb.h>
 
