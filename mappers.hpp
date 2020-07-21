@@ -131,6 +131,27 @@ bool handleRomLoad()
             fclose(rom);
         break;
 
+        case 0x07:
+            printf("WARNING!  MAPPER 7 SUPPORT IS EXPERIMENTAL AND NOT FINISHED!\n");
+            NESOB.prgsize = NESOB.header[0x04] * 16384;
+            printf("DEBUG: PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
+            NESOB.chrsize = NESOB.header[0x05] * 8192;
+            printf("DEBUG: CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
+            //printf("testing\n");
+            rom = fopen(NESOB.filename, "rb");
+            //printf("testing\n");
+            fseek(rom,0x10,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.memory + 0x8000,0x8000,1,rom);
+            //printf("testing\n");
+            //printf("testing\n");
+            fseek(rom,NESOB.prgsize + 0x10,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.PPUmemory, 0x2000, 1, rom);
+            //printf("testing\n");
+            fclose(rom);
+        break;
+
         case 0x09:
             printf("WARNING!  MAPPER 9 SUPPORT IS VERY EXPERIMENTAL AND NOT FINISHED!\n");
             NESOB.prgsize = NESOB.header[0x04] * 16384;
@@ -227,6 +248,28 @@ bool handleRomLoad()
             memDump();
         break;
 
+        case 113:
+            NESOB.prgsize = NESOB.header[0x04] * 16384;
+            printf("WARNING!  MAPPER 113 SUPPORT IS VERY EXPERIMENTAL AND VERY UNFINISHED!\n");
+            printf("MAPPER 113 IS BOOTLEG? MAPPER!\n");
+            printf("DEBUG: PRG ROM is 0x%X Bytes!\n",NESOB.prgsize);
+            NESOB.chrsize = NESOB.header[0x05] * 8192;
+            printf("DEBUG: CHR ROM is 0x%X Bytes!\n",NESOB.chrsize);
+            //printf("testing\n");
+            rom = fopen(NESOB.filename, "rb");
+            //printf("testing\n");
+            fseek(rom,0x10,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.memory + 0x8000,0x8000,1,rom);
+            //printf("testing\n");
+            //printf("testing\n");
+            fseek(rom,NESOB.prgsize + 0x10,SEEK_SET);
+            //printf("testing\n");
+            fread(NESOB.PPUmemory, 0x2000, 1, rom);
+            //printf("testing\n");
+            fclose(rom);
+        break;
+
         case 209:
         mapper = 90;
         handleRomLoad();
@@ -258,15 +301,112 @@ bool handleRomLoad()
     return true;
 }
 uint16_t ramInitcount;
+bool noEnter;
+SDL_Rect message[4];
+std::string textbArray[4];
+const char *textbbuffer[4];
+SDL_Texture *textb[4];
+SDL_Color sdlBlack = {0, 0, 0,0};
+int texWH[2];
 bool beginning()
 {
+    TTF_Init();
     ramInitcount = 0;
     #ifdef _WIN32
         printf("WARNING!  You are using a windows build of nopNES!\nWindows Builds are experimental and thus may have bugs!\n");
     #endif // _WIN32
     //cout<<"Welcome to nopNES!"<<endl<<"Rom Name: ";
-    printf("Welcome to nopNES Beta v%s!\nMade by Tails2600\nEnter Rom Name: ",currentVersion);
-    cin>>NESOB.filename;
+    //printf("Welcome to nopNES Beta v%s!\nMade by Nasina\nEnter Rom Name: ",currentVersion);
+    TTF_Font* textboxFont = TTF_OpenFont("ubuntu.ttf", 28); //this opens a font style and sets a size
+    TTF_Font* textboxFont2 = TTF_OpenFont("ubuntu.ttf", 20); //this opens a font style and sets a size
+    TTF_Font* textboxFont3 = TTF_OpenFont("ubuntu.ttf", 18); //this opens a font style and sets a size
+    while(noEnter == false)
+    {
+        SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0x00);
+        SDL_RenderClear(renderer);
+        if(textboxFont == NULL)
+        {
+            printf("TEXT ERROR!\n");
+        }
+        textbArray[0] = "Welcome to nopNES Beta v0.1!";
+        textbArray[1] = "Made by Nasina";
+        textbArray[2] = "Enter Rom Name:";
+        textbArray[3] = "";
+        textbbuffer[0] = textbArray[0].c_str();
+        textbbuffer[1] = textbArray[1].c_str();
+        textbbuffer[2] = textbArray[2].c_str();
+        SDL_Surface* textboxTextSurf = TTF_RenderText_Solid(textboxFont, textbbuffer[0], sdlBlack);
+        textb[0] = SDL_CreateTextureFromSurface(renderer, textboxTextSurf);
+
+        textboxTextSurf = TTF_RenderText_Solid(textboxFont2, textbbuffer[1], sdlBlack);
+        textb[1] = SDL_CreateTextureFromSurface(renderer, textboxTextSurf);
+
+        textboxTextSurf = TTF_RenderText_Solid(textboxFont2, textbbuffer[2], sdlBlack);
+        textb[2] = SDL_CreateTextureFromSurface(renderer, textboxTextSurf);
+
+        textboxTextSurf = TTF_RenderText_Solid(textboxFont3, NESOB.filename, sdlBlack);
+        textb[3] = SDL_CreateTextureFromSurface(renderer, textboxTextSurf);
+
+        while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
+        {
+            switch(SDL_EVENT_HANDLING.type)
+            {
+                case SDL_QUIT:
+                    return 1;
+                break;
+
+                case SDL_TEXTINPUT:
+                    /* Add new text onto the end of our text */
+                    strcat(NESOB.filename, SDL_EVENT_HANDLING.text.text);
+                break;
+
+                case SDL_KEYDOWN:
+                    switch( SDL_EVENT_HANDLING.key.keysym.sym )
+                    {
+                        case SDLK_RETURN:
+                            noEnter = true;
+                        break;
+
+                        case SDLK_BACKSPACE:
+                            NESOB.filename[0] = '\0';
+                        break;
+                    }
+                break;
+            }
+        }
+        //printf("t: %s\n",NESOB.filename);
+        SDL_QueryTexture(textb[0], NULL, NULL, &texWH[0], &texWH[1]);
+        //message[0].y = 20;
+        message[0].x = 256 - (texWH[0] / 2);
+        message[0].y = 0;
+        message[0].w = texWH[0];
+        message[0].h = texWH[1];
+        SDL_QueryTexture(textb[1], NULL, NULL, &texWH[0], &texWH[1]);
+        message[1].x = 256 - (texWH[0] / 2);
+        message[1].y = message[0].h;
+        message[1].w = texWH[0];
+        message[1].h = texWH[1];
+        SDL_QueryTexture(textb[2], NULL, NULL, &texWH[0], &texWH[1]);
+        message[2].y = 180;
+        message[2].w = texWH[0];
+        message[2].h = texWH[1];
+        message[2].x = 256 - (texWH[0] / 2);
+        SDL_QueryTexture(textb[3], NULL, NULL, &texWH[0], &texWH[1]);
+        message[3].y = 200;
+        message[3].w = texWH[0];
+        message[3].h = texWH[1];
+        message[3].x = 256 - (texWH[0] / 2);
+        SDL_RenderCopy(renderer, textb[0], NULL, &message[0]);
+        SDL_RenderCopy(renderer, textb[1], NULL, &message[1]);
+        SDL_RenderCopy(renderer, textb[2], NULL, &message[2]);
+        SDL_RenderCopy(renderer, textb[3], NULL, &message[3]);
+        SDL_RenderPresent(renderer);
+    }
+
+
+
+    //cin>>NESOB.filename;
+    SDL_RenderSetScale(renderer,2,2);
     FILE* headerf = fopen(NESOB.filename, "rb");
     if(headerf == NULL)
     {

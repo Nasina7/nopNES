@@ -2,12 +2,19 @@ Doesn't work:
 Somari (BOOTLEG) - Stuck on title screen, waiting for vblank?
 
 Gameplay Problems:
-Kid Icarus - Controls are fucked, reason unknown
 
 Graphics Problems:
-Dig-Dug - Using the wrong nametable, reason unknown
+Dig-Dug, Galaga - Using the wrong nametable, likely uses single nametable, but emu assumes vmirroring
 Ducktales - Sprites are broken, need ability to change sprite tile data per scanline
-Kirby's Adventure - Bottom hud is missing, pause screen is somewhat broken, needs MMC3irq
-Super Mario Bros 2 - Some scrolling is broken, reason unknown
-Super Mario Bros 3 - Bottom hud is broken, needs MMC3irq
-Super Mario World (NES BOOTLEG) - Title screen scrolling is broken and hud is broken, needs scanline irq's
+Kirby's Adventure - See MMC3 Problems
+Super Mario Bros 3 - See MMC3 Problems
+Super Mario World (BOOTLEG) - Title screen scrolling is broken and hud is broken, needs scanline irq's
+Battletoads - A lot of graphical problems.  Game is unplayable.
+Tetris, Dr Mario, Castlevania 2 - All have graphical problems, all use mapper 1 so it's likely that
+
+Games with Unimplemented Mappers:
+Castlevania III - Needs Mapper 5
+
+
+MMC3 Problems:
+Irq's are implemented, but I need accurate per scanline yscrolling for the games to display properly.

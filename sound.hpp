@@ -9,16 +9,19 @@
 Uint8 sq1raw[96000];
 Uint8 sq2raw[96000];
 Uint8 triraw[96000];
+Uint8 noiraw[96000];
 Uint8 silence[96000];
 float initialfreq;
 float periods;
 bool sq1enable = true;
 bool sq2enable = true;
 bool trienable = true;
+bool noienable = true;
 float divide = 2.28;
 Mix_Chunk *sq1rawchunk;
 Mix_Chunk *sq2rawchunk;
 Mix_Chunk *trirawchunk;
+Mix_Chunk *noirawchunk;
 int in;
 uint16_t timesq1;
 uint16_t finalfreq;
@@ -42,6 +45,11 @@ int generateSamplesq1()
 {
     finalPeriods = finalPeriods / divide;
     backupPeriods = backupPeriods / divide;
+    if(finalPeriods == 0 || backupPeriods == 0)
+    {
+        printf("APU ERROR: SQ1 FINAL OR BACK PERIODS IS 0!  THIS SHOULD NOT HAPPEN!\n");
+        return 1;
+    }
     while(true)
     {
         if(periodHigh == false)
@@ -57,6 +65,8 @@ int generateSamplesq1()
 
         while(periodCounter != finalPeriods)
         {
+            //printf("perCount: %i\n",periodCounter);
+            //printf("finalper: %i\n",finalPeriods);
             if(periodHigh == true)
             {
                 sq1raw[periodCounter] = 0x40;
@@ -72,7 +82,6 @@ int generateSamplesq1()
             periodCounter++;
             if(periodCounter > 96000)
             {
-                //printf("test\n");
                 return 0;
             }
         }
@@ -90,6 +99,11 @@ int generateSamplesq2()
 {
     finalPeriods = finalPeriods / divide;
     backupPeriods = backupPeriods / divide;
+    if(finalPeriods == 0 || backupPeriods == 0)
+    {
+        printf("APU ERROR: SQ2 FINAL OR BACK PERIODS IS 0!  THIS SHOULD NOT HAPPEN!\n");
+        return 1;
+    }
     while(true)
     {
         if(periodHigh == false)
@@ -141,6 +155,11 @@ int generateSampleTri()
 {
     finalPeriods = finalPeriods / divide;
     backupPeriods = backupPeriods / divide;
+    if(finalPeriods == 0 || backupPeriods == 0)
+    {
+        printf("APU ERROR: TRI FINAL OR BACK PERIODS IS 0!  THIS SHOULD NOT HAPPEN!\n");
+        return 1;
+    }
     //printf("%i\n",finalPeriods);
     increaseTriVal2 = finalPeriods / 0x80;
     if(increaseTriVal2 <= 1)
@@ -200,13 +219,24 @@ int generateSampleTri()
         otherCounter++;
     }
 }
+int generateSamplenoi()
+{
+    periodCounter = 0;
+        while(true)
+        {
+            noiraw[periodCounter] = rand() % 0x100;
+            periodCounter++;
+            if(periodCounter > 96000)
+            {
+                return 0;
+            }
+        }
+}
 uint16_t timesq1back;
 uint8_t channelVolume;
 int handlesq1()
 {
     timesq1back = timesq1;
-    //Mix_CloseAudio();
-    //againTest:
     quiet = false;
     in = 0;
     convert11 = 0;
@@ -214,35 +244,20 @@ int handlesq1()
     periodCounter = 0;
     convert11 = NESOB.memory[0x4003] << 8 | NESOB.memory[0x4002];
     timesq1 = convert11.to_ulong();
-    //NESOB.memory[0x4003] = 0;
-   // NESOB.memory[0x4002] = 0;
-    //timesq1 = 0x60;
-   // printf("timesq1: %x\n",timesq1);
     bit4 = NESOB.memory[0x4000];
     channelVolume = bit4.to_ulong();
     Mix_Volume(0,channelVolume * 4);
-   // Mix_Volume(0,0x40);
     periodCounter = 0;
-    //timesq1 = 84;
     finalPeriods = timesq1;
     backupPeriods = timesq1;
     sampleTest = 800;
-    //printf("finalPeriods: %i",finalPeriods);
-    if(lengthCounter1 == 0)
-    {
-        //sq1rawchunk = Mix_QuickLoad_RAW(silence,96000);
-        //Mix_PlayChannel(0,sq1rawchunk,0);
-    }
     tempBitBuffer = NESOB.memory[0x4000];
     if(finalPeriods < 8 || lengthCounter1 == 0)
     {
-        //Mix_Pause(0);
         if(tempBitBuffer[5] == 0)
         {
             return 0;
         }
-        //SDL_Delay(17);
-        //goto againTest;
     }
     if(lengthCounter1 != 0)
     {
@@ -272,8 +287,6 @@ uint16_t timesq2;
 int handlesq2()
 {
     timesq2back = timesq2;
-    //Mix_CloseAudio();
-    //againTest:
     quiet = false;
     in = 0;
     convert11 = 0;
@@ -281,36 +294,20 @@ int handlesq2()
     periodCounter = 0;
     convert11 = NESOB.memory[0x4007] << 8 | NESOB.memory[0x4006];
     timesq2 = convert11.to_ulong();
-    //NESOB.memory[0x4003] = 0;
-   // NESOB.memory[0x4002] = 0;
-    //timesq1 = 0x60;
-   // printf("timesq1: %x\n",timesq1);
     bit4 = NESOB.memory[0x4004];
     channelVolume = bit4.to_ulong();
     Mix_Volume(1,channelVolume * 4);
-
     periodCounter = 0;
-    //timesq1 = 84;
     finalPeriods = timesq2;
     backupPeriods = timesq2;
     sampleTest = 800;
-    //printf("finalPeriods: %i",finalPeriods);
-    if(lengthCounter2 == 0)
-    {
-        //sq2rawchunk = Mix_QuickLoad_RAW(silence,96000);
-        //Mix_PlayChannel(1,sq2rawchunk,0);
-    }
     tempBitBuffer = NESOB.memory[0x4004];
-    if(finalPeriods < 8)
+    if(finalPeriods < 8 || lengthCounter2 == 0)
     {
-        //Mix_Pause(0);
-        return 0;
-        //SDL_Delay(17);
-        //goto againTest;
-    }
-    if(lengthCounter2 == 0 && tempBitBuffer[5] == 0)
-    {
-        return 0;
+        if(tempBitBuffer[5] == 0)
+        {
+            return 0;
+        }
     }
     if(lengthCounter2 != 0)
     {
@@ -340,42 +337,24 @@ uint16_t timetri;
 int handleTri()
 {
     timetriback = timetri;
-    //Mix_CloseAudio();
-    //againTest:
     quiet = false;
     in = 0;
     convert11 = 0;
     periodCounter = 0;
     convert11 = NESOB.memory[0x400B] << 8 | NESOB.memory[0x400A];
     timetri = convert11.to_ulong();
-    //NESOB.memory[0x4003] = 0;
-   // NESOB.memory[0x4002] = 0;
-    //timesq1 = 0x60;
-   // printf("timesq1: %x\n",timesq1);
     Mix_Volume(2,0x30);
-
     periodCounter = 0;
-    //timesq1 = 84;
     finalPeriods = timetri;
     backupPeriods = timetri;
     sampleTest = 800;
-    //printf("finalPeriods: %i",finalPeriods);
-    //if(lengthCounter2 == 0)
-    //{
-        //sq2rawchunk = Mix_QuickLoad_RAW(silence,96000);
-        //Mix_PlayChannel(1,sq2rawchunk,0);
-    //}
-    if(finalPeriods < 8)
-    {
-        //Mix_Pause(0);
-        return 0;
-        //SDL_Delay(17);
-        //goto againTest;
-    }
     tempBitBuffer = NESOB.memory[0x4008];
-    if(lengthCounter3 == 0 && tempBitBuffer[7] == 0)
+    if(finalPeriods < 8 || lengthCounter3 == 0)
     {
-        return 0;
+        if(tempBitBuffer[7] == 0)
+        {
+            return 0;
+        }
     }
     if(lengthCounter3 != 0)
     {
@@ -400,6 +379,28 @@ int handleTri()
         }
     return 0;
 }
+uint8_t noiVol;
+int handleNoise()
+{
+    tempBitBuffer = NESOB.memory[0x400C];
+    tempBitBuffer[4] = 0;
+    tempBitBuffer[5] = 0;
+    tempBitBuffer[6] = 0;
+    tempBitBuffer[7] = 0;
+    noiVol = tempBitBuffer.to_ulong();
+    Mix_Volume(3,noiVol * 4);
+    tempBitBuffer = NESOB.memory[0x400C];
+    if(lengthCounter4 == 0 && tempBitBuffer[5] == 0)
+    {
+        Mix_Pause(3);
+        return 0;
+    }
+    generateSamplenoi();
+    noirawchunk = Mix_QuickLoad_RAW(noiraw,96000);
+    Mix_PlayChannel(3,noirawchunk,0);
+    return 0;
+}
+bool firstboot;
 int handleSound()
 {
     if(sq1enable == true)
@@ -414,8 +415,11 @@ int handleSound()
     {
         handleTri();
     }
-    //SDL_Delay(17);
-    //handleSound();
+    if(noienable == true)
+    {
+        handleNoise();
+    }
+
     return 0;
 }
 int handleSoundTimers()
@@ -424,13 +428,18 @@ int handleSoundTimers()
     uint8_t le;
     uint8_t le2;
     uint8_t le3;
+    uint8_t le4;
     uint8_t env1;
+    uint8_t env2;
+    uint8_t env4;
     tempBitBuffer = NESOB.memory[0x4000];
     tempBitBuffer2 = NESOB.memory[0x4004];
     tempBitBuffer3 = NESOB.memory[0x4008];
+    tempBitBuffer4 = NESOB.memory[0x400C];
     le = lengthCounter1;
     le2 = lengthCounter2;
     le3 = lengthCounter3;
+    le4 = lengthCounter4;
     if(lengthCounter1 == 1 && tempBitBuffer[5] == 0 && volumeConstsq1 == true)
     {
         lengthCounter1 = 2;
@@ -443,6 +452,7 @@ int handleSoundTimers()
     {
         lengthCounter1 = le;
     }
+
     if(lengthCounter2 == 1 && tempBitBuffer2[5] == 0 && volumeConstsq2 == true)
     {
         lengthCounter2 = 2;
@@ -455,6 +465,7 @@ int handleSoundTimers()
     {
         lengthCounter2 = le2;
     }
+
     if(lengthCounter3 == 1 && tempBitBuffer3[7] == 0)
     {
         lengthCounter3 = 2;
@@ -463,15 +474,28 @@ int handleSoundTimers()
     {
         lengthCounter3 -= 2;
     }
-    if(tempBitBuffer3[5] == 1)
+    if(tempBitBuffer3[7] == 1)
     {
         lengthCounter3 = le3;
     }
-    return 0;
+    if(lengthCounter4 == 1 && tempBitBuffer4[5] == 0)
+    {
+        lengthCounter4 = 2;
+    }
+    if(lengthCounter4 != 0 && tempBitBuffer4[5] == 0)
+    {
+        lengthCounter4 -= 2;
+    }
+    if(tempBitBuffer4[5] == 1)
+    {
+        lengthCounter4 = le4;
+    }
+
     if(tempBitBuffer[4] == 0) // If SQ1 Envelope is enabled
     {
         bit42 = NESOB.memory[0x4000];
-        if(bit42.to_ulong() == 0)
+        dummy8 = bit42.to_ulong();
+        if(dummy8 == 0)
         {
             if(tempBitBuffer[5] == 1)
             {
@@ -489,7 +513,7 @@ int handleSoundTimers()
             NESOB.memory[0x4000] = tempBitBuffer.to_ulong();
             goto doneEnv1;
         }
-        if(bit42.to_ulong() != 0)
+        if(dummy8 != 0)
         {
             env1 = bit42.to_ulong();
             if(env1 < env1 - 4)
@@ -512,6 +536,7 @@ int handleSoundTimers()
             }
             env1 -= 4;
             bit42 = env1;
+            //printf("test\n");
             tempBitBuffer = NESOB.memory[0x4000];
             tempBitBuffer[0] = bit42[0];
             tempBitBuffer[1] = bit42[1];
@@ -521,7 +546,116 @@ int handleSoundTimers()
         }
     }
     doneEnv1:
-    //cout<<"s1: "<<sq1env<<endl;
-    //cout<<"s2: "<<sq1env2<<endl;
+    if(tempBitBuffer2[4] == 0) // If SQ1 Envelope is enabled
+    {
+        bit42 = NESOB.memory[0x4004];
+        dummy8 = bit42.to_ulong();
+        if(dummy8 == 0)
+        {
+            if(tempBitBuffer2[5] == 1)
+            {
+                bit42 = 15;
+            }
+            if(tempBitBuffer2[5] == 0)
+            {
+                bit42 = 0;
+            }
+            tempBitBuffer = NESOB.memory[0x4004];
+            tempBitBuffer[0] = bit42[0];
+            tempBitBuffer[1] = bit42[1];
+            tempBitBuffer[2] = bit42[2];
+            tempBitBuffer[3] = bit42[3];
+            NESOB.memory[0x4004] = tempBitBuffer.to_ulong();
+            goto doneEnv2;
+        }
+        if(dummy8 != 0)
+        {
+            env2 = bit42.to_ulong();
+            if(env2 < env2 - 4)
+            {
+                if(tempBitBuffer2[5] == 1)
+                {
+                    bit42 = 15;
+                }
+                if(tempBitBuffer2[5] == 0)
+                {
+                    bit42 = 0;
+                }
+                tempBitBuffer = NESOB.memory[0x4004];
+                tempBitBuffer[0] = bit42[0];
+                tempBitBuffer[1] = bit42[1];
+                tempBitBuffer[2] = bit42[2];
+                tempBitBuffer[3] = bit42[3];
+                NESOB.memory[0x4004] = tempBitBuffer.to_ulong();
+                goto doneEnv2;
+            }
+            env2 -= 4;
+            bit42 = env2;
+            //printf("test\n");
+            tempBitBuffer = NESOB.memory[0x4004];
+            tempBitBuffer[0] = bit42[0];
+            tempBitBuffer[1] = bit42[1];
+            tempBitBuffer[2] = bit42[2];
+            tempBitBuffer[3] = bit42[3];
+            NESOB.memory[0x4004] = tempBitBuffer.to_ulong();
+        }
+    }
+    doneEnv2:
+    if(tempBitBuffer4[4] == 0) // If SQ1 Envelope is enabled
+    {
+        bit42 = NESOB.memory[0x400C];
+        dummy8 = bit42.to_ulong();
+        if(dummy8 == 0)
+        {
+            if(tempBitBuffer4[5] == 1)
+            {
+                bit42 = 15;
+            }
+            if(tempBitBuffer4[5] == 0)
+            {
+                bit42 = 0;
+            }
+            tempBitBuffer = NESOB.memory[0x400C];
+            tempBitBuffer[0] = bit42[0];
+            tempBitBuffer[1] = bit42[1];
+            tempBitBuffer[2] = bit42[2];
+            tempBitBuffer[3] = bit42[3];
+            NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
+            goto doneEnv4;
+        }
+        if(dummy8 != 0)
+        {
+            env4 = bit42.to_ulong();
+            if(env4 < env4 - 4)
+            {
+                if(tempBitBuffer4[5] == 1)
+                {
+                    bit42 = 15;
+                }
+                if(tempBitBuffer4[5] == 0)
+                {
+                    bit42 = 0;
+                }
+                tempBitBuffer = NESOB.memory[0x400C];
+                tempBitBuffer[0] = bit42[0];
+                tempBitBuffer[1] = bit42[1];
+                tempBitBuffer[2] = bit42[2];
+                tempBitBuffer[3] = bit42[3];
+                NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
+                goto doneEnv4;
+            }
+            env4 -= 4;
+            bit42 = env4;
+            //printf("test\n");
+            tempBitBuffer = NESOB.memory[0x400C];
+            tempBitBuffer[0] = bit42[0];
+            tempBitBuffer[1] = bit42[1];
+            tempBitBuffer[2] = bit42[2];
+            tempBitBuffer[3] = bit42[3];
+            NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
+        }
+    }
+    doneEnv4:
+
     dummyval++;
 }

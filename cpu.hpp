@@ -10,12 +10,15 @@ void nesPowerOn()
     NESOB.y = 0x00;
 }
 bool VBLFLAGcleardelay;
+bool NMIithrottle;
 uint64_t cyclesAtNMI;
 void handleNMI()
 {
     NESOB.Xbitbuffer = NESOB.memory[0x2000];
     if(NESOB.Xbitbuffer[7] == 1 && NMIrequest == true)
     {
+        //printf("Scanline %i\n",NESOB.scanline);
+        //printf("Frame %i\n",currentFrame);
         NMIrequest = false;
         VBLFLAGcleardelay = true;
         cyclesAtNMI = NESOB.cycles;
@@ -1666,6 +1669,18 @@ void doOpcode()
             NESOB.cycles += 3;
         break;
 
+        case 0xA7:
+            printf("UNOFFICIAL OP 0xA7 RAN!\n");
+            NESOB.prevValue = NESOB.a;
+            NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
+            NESOB.a = NESmemRead(NESOB.tempValue16);
+            NESOB.x = NESmemRead(NESOB.tempValue16);
+            handleFlags7(NESOB.a,NESOB.prevValue);
+            handleFlags1(NESOB.a,NESOB.prevValue);
+            NESOB.pc += 2;
+            NESOB.cycles += 3;
+        break;
+
         case 0xA8:
             NESOB.prevValue = NESOB.y;
             NESOB.y = NESOB.a;
@@ -2488,7 +2503,7 @@ void doOpcode()
 
         default:
             printf("EMULATED SOFTWARE HAS CRASHED.  PRINTING DEBUG INFO...\n");
-            printf("Unknown Opcode 0x%X!\n",NESOB.opcode);
+            printf("Unknown Opcode 0x%X!\n",NESOB.memory[NESOB.pc]);
             printf("Cycles: %i\n",NESOB.cycles);
             printf("Program Counter: 0x%X\n",NESOB.pc);
             printf("A:0x%X \nX:0x%X \nY:0x%X \nP:0x%X \nSP:0x%X\n",NESOB.a, NESOB.x, NESOB.y, NESOB.pflag, NESOB.sp);
@@ -2508,6 +2523,7 @@ void doOpcode()
             {
                 breakpoint = true;
             }
+            memDump();
             //NESOB.pc++;
         break;
     }

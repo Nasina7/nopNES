@@ -1,3 +1,11 @@
+6/16/2020 Commit:
+Added UI for selecting roms
+Added Message Boxes
+Implemented more mappers
+Added savestates
+Added rewind
+
+
 5/6/2020 Commit:
 Fixed all remaining pallete problems with horizontal scrolling.
 Added a basic save file feature

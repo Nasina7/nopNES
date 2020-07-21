@@ -50,6 +50,7 @@
 					<Add directory="/usr/i686-w64-mingw32/include" />
 					<Add directory="/home/zach/SDL2_mixer-2.0.4/i686-w64-mingw32/include/SDL2" />
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/include/SDL2" />
+					<Add directory="/home/zach/SDL2ttfwin/include/SDL2" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -60,9 +61,11 @@
 					<Add option="-lmingw32" />
 					<Add option="-static-libgcc" />
 					<Add option="-static-libstdc++" />
+					<Add option="-lSDL2_ttf" />
 					<Add directory="/home/zach/SDL2-2.0.10/i686-w64-mingw32/lib" />
 					<Add directory="/usr/i686-w64-mingw32/lib" />
 					<Add directory="/home/zach/SDL2_mixer-2.0.4/i686-w64-mingw32/lib" />
+					<Add directory="/home/zach/SDL2ttfwin/lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -73,6 +76,7 @@
 			<Add option="-lSDL2" />
 			<Add option="-pthread" />
 			<Add option="-lSDL2_mixer" />
+			<Add option="-lSDL2_ttf" />
 		</Linker>
 		<Unit filename="Controls.hpp" />
 		<Unit filename="cpu.hpp" />
