@@ -27,6 +27,7 @@ int main()
     notiText = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,128, 20);
     texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGBA8888,SDL_TEXTUREACCESS_STREAMING,256, 240);
     textureScanline = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,512, 240);
+    textureScanlineF = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,256, 240);
     textureScanline28 = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,256, 480);
     texture2400 = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGBA8888,SDL_TEXTUREACCESS_STREAMING,256, 240);
     restartNES:
@@ -65,11 +66,18 @@ int main()
         handleNMI();
         if(prevScanline != NESOB.scanline)
         {
-            handleOther();
             if(rendererChoose == true)
             {
-                handleGraphicsBASICSCAN();
+                if(toggleRender == false)
+                {
+                    handleGraphicsBASICSCAN();
+                }
+                if(toggleRender == true)
+                {
+                    handleGraphicsScan();
+                }
             }
+            handleOther();
         }
         if( prevScanline != NESOB.scanline && NESOB.scanline == 255 )
         {
@@ -102,6 +110,7 @@ int main()
             windowW2 = windowW;
             windowH2 = windowH;
             SDL_RenderSetScale(renderer, windowW2 / 256, windowH2 / 240);
+
             if(graphicThread == false && rendererChoose == false)
             {
                 handleGraphicsBASIC();

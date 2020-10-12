@@ -621,7 +621,7 @@ int handleSoundTimers()
             tempBitBuffer[2] = bit42[2];
             tempBitBuffer[3] = bit42[3];
             NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
-            goto doneEnv4;
+            return 0;
         }
         if(dummy8 != 0)
         {
@@ -642,7 +642,7 @@ int handleSoundTimers()
                 tempBitBuffer[2] = bit42[2];
                 tempBitBuffer[3] = bit42[3];
                 NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
-                goto doneEnv4;
+                return 0;
             }
             env4 -= 4;
             bit42 = env4;
@@ -655,7 +655,5 @@ int handleSoundTimers()
             NESOB.memory[0x400C] = tempBitBuffer.to_ulong();
         }
     }
-    doneEnv4:
-
-    dummyval++;
+    return 0;
 }

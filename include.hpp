@@ -40,6 +40,7 @@ bool newOpcode;
 uint16_t Loopy;
 bool beginOpLoop;
 bool newOpcode2;
+bool toggleRender;
 uint16_t nametableAddr;
 bool rendererChoose;
 uint8_t dummyval;
@@ -484,7 +485,7 @@ bool irqThrottle;
 bool drawT;
 int handleMMC3irq()
 {
-    return 0;
+    //return 0;
     if(mapper == 4) // MMC3 IRQ timer
     {
         tempBitBuffer = NESOB.pflag;
@@ -1981,10 +1982,70 @@ case 0xC000 ... 0xDFFF:
                 break;
                 */
 uint8_t sp0scan;
+uint8_t scan0;
 bool sprite0;
+uint8_t scan02;
+std::bitset<16> tempBitBuffer162;
 void handleOther()
 {
     handleMMC3irq();
+    /*
+    if(NESOB.scanline == 0)
+    {
+        tempBitBuffer16 = scan0 - 259;
+        tempBitBuffer162 = Loopy;
+        tempBitBuffer162[9] = tempBitBuffer16[7];
+        tempBitBuffer162[8] = tempBitBuffer16[6];
+        tempBitBuffer162[7] = tempBitBuffer16[5];
+        tempBitBuffer162[6] = tempBitBuffer16[4];
+        tempBitBuffer162[5] = tempBitBuffer16[3];
+        tempBitBuffer162[14] = tempBitBuffer16[2];
+        tempBitBuffer162[13] = tempBitBuffer16[1];
+        tempBitBuffer162[12] = tempBitBuffer16[0];
+        Loopy = tempBitBuffer162.to_ulong();
+    }
+    if(NESOB.scanline != 0)
+    {
+        tempBitBuffer = scan0;
+        tempBitBuffer162 = Loopy;
+        tempBitBuffer[7] = tempBitBuffer162[9];
+        tempBitBuffer[6] = tempBitBuffer162[8];
+        tempBitBuffer[5] = tempBitBuffer162[7];
+        tempBitBuffer[4] = tempBitBuffer162[6];
+        tempBitBuffer[3] = tempBitBuffer162[5];
+        tempBitBuffer[2] = tempBitBuffer162[14];
+        tempBitBuffer[1] = tempBitBuffer162[13];
+        tempBitBuffer[0] = tempBitBuffer162[12];
+        scan0 = tempBitBuffer.to_ulong();
+        scan0++;
+        tempBitBuffer = scan0;
+        tempBitBuffer162[9] = tempBitBuffer[7];
+        tempBitBuffer162[8] = tempBitBuffer[6];
+        tempBitBuffer162[7] = tempBitBuffer[5];
+        tempBitBuffer162[6] = tempBitBuffer[4];
+        tempBitBuffer162[5] = tempBitBuffer[3];
+        tempBitBuffer162[14] = tempBitBuffer[2];
+        tempBitBuffer162[13] = tempBitBuffer[1];
+        tempBitBuffer162[12] = tempBitBuffer[0];
+        Loopy = tempBitBuffer162.to_ulong();
+    }
+    */
+    /*
+    if(NESOB.scanline < 240)
+    {
+        tempBitBuffer16 = NESOB.scanline;
+        tempBitBuffer162 = Loopy;
+        tempBitBuffer162[9] = tempBitBuffer16[7];
+        tempBitBuffer162[8] = tempBitBuffer16[6];
+        tempBitBuffer162[7] = tempBitBuffer16[5];
+        tempBitBuffer162[6] = tempBitBuffer16[4];
+        tempBitBuffer162[5] = tempBitBuffer16[3];
+        tempBitBuffer162[14] = tempBitBuffer16[2];
+        tempBitBuffer162[13] = tempBitBuffer16[1];
+        tempBitBuffer162[12] = tempBitBuffer16[0];
+        Loopy = tempBitBuffer162.to_ulong();
+    }
+    */
     //doneIRQ:
     tempBitBuffer = NESOB.memory[0x2000];
     tempBitBuffer2 = NESOB.memory[0x2002];

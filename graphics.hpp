@@ -6,6 +6,7 @@ uint8_t bitcount;
 SDL_Texture* texture = NULL;
 SDL_Texture* texture2400 = NULL;
 SDL_Texture* textureScanline = NULL;
+SDL_Texture* textureScanlineF = NULL;
 SDL_Texture* textureScanline28 = NULL;
 SDL_Rect mainScreen;
 std::bitset<8> graphicline;
@@ -309,6 +310,8 @@ void chooseRenderColorSprite(uint8_t spritePal)
 uint32_t curPixx;
 uint32_t curPixy;
 uint32_t pixels[512 * 240];
+uint32_t pixelsFixTest[240][512];
+uint32_t pixelsScanF[240][256];
 uint32_t pixelsRe[240][512];
 uint32_t pixelsRe28[480][256];
 uint32_t pixelsScan28[256 * 480];
@@ -1170,8 +1173,10 @@ int handleGraphicsBASICSCAN()
                         if(ppurendercount == 1)
                         {
                             curPixx = curPixx + 256;
+                            xS9bit += 256;
                         }
                         curPixx = curPixx & 511;
+                        xS9bit = xS9bit & 511;
                         if(NESOB.scanline < 240)
                         {
                             yscro8 = NESOB.scanline - scrolly;
@@ -1349,4 +1354,276 @@ int handleGraphicsBASICSCAN()
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00,0,0);
     SDL_RenderClear(renderer);
     }
+    return 0;
+}
+
+
+
+
+uint16_t testValF;
+uint16_t testValF2;
+uint16_t scrollYF;
+int handleGraphicsScan()
+{
+    if(maskProperties[3] == 0)
+    {
+        if(NESOB.scanline != 260)
+        {
+            return 0;
+        }
+        goto doneRenderFrame;
+    }
+    if(NESOB.scanline >= 240 && NESOB.scanline != 260)
+    {
+        return 0;
+    }
+    if(NESOB.scanline == 260)
+    {
+        goto doneRenderFrame;
+    }
+    ppurendercount = 2;
+    tempBitBuffer16 = Loopy;
+    nametableuse = (tempBitBuffer16[11] * 2) + tempBitBuffer16[10];
+    tempBitBuffer = Loopy;
+    tempBitBuffer[7] = 0;
+    tempBitBuffer[6] = 0;
+    tempBitBuffer[5] = 0;
+    scrollx = tempBitBuffer.to_ulong();
+    scrollx = scrollx * 8;
+    scrollx += fineXscroll;
+    //printf("scrollx: %i\n",scrollx);
+    tempBitBuffer = Loopy >> 5;
+    tempBitBuffer[7] = 0;
+    tempBitBuffer[6] = 0;
+    tempBitBuffer[5] = 0;
+    scrolly = tempBitBuffer.to_ulong();
+    scrolly = scrolly * 8;
+    tempBitBuffer = Loopy >> 12;
+    tempBitBuffer[7] = 0;
+    tempBitBuffer[6] = 0;
+    tempBitBuffer[5] = 0;
+    tempBitBuffer[4] = 0;
+    tempBitBuffer[3] = 0;
+    fineYscroll = tempBitBuffer.to_ulong();
+    scrolly += fineYscroll;
+    //printf("Scrolly: %X\n",scrolly);
+    nametableAddr2 = nametableLookup[nametableuse];
+    //printf("Nametable1: 0x%X\n",nametableAddr2);
+    if(NESOB.scanline == 135)
+    {
+        printf("Scrolly: 0x%X\n",scrolly);
+        printf("Scrollx: 0x%X\n",scrollx);
+        printf("nameuse: 0x%X\n",nametableAddr2);
+    }
+    while(ppurendercount != 1)
+    {
+    Xcounter = 32;
+    bitcount = 7;
+    if(MMC3mirror == false)
+    {
+        testValF2 = NESOB.scanline + scrolly;
+        if(testValF2 >= 260)
+        {
+            testValF2 -= 260;
+        }
+        testValF = nametableAddr2 + ((scrolly) / 8) * 32;
+    }
+    if(MMC3mirror == true)
+    {
+        //testValF2 = NESOB.scanline + scrolly;
+        if(testValF2 < 260)
+        {
+            testValF = nametableAddr2 + ((scrolly) / 8) * 32;
+        }
+        if(testValF2 >= 260)
+        {
+            testValF2 -= 260;
+            if(nametableAddr2 == 0x2000)
+            {
+                testValF = 0x2800;
+            }
+            if(nametableAddr2 == 0x2800)
+            {
+                testValF = 0x2000;
+            }
+            testValF += ((testValF2) / 8) * 32;
+        }
+    }
+    testValF = nametableAddr2 + ((scrolly) / 8) * 32;
+    tiledatalocation1 = testValF;
+    tilelocation = NESOB.PPUmemory[tiledatalocation1];
+    tilecount = tilelocation << 4;
+    tilecount += NESOB.scanline % 8;
+    xpix = 0;
+    ypix = NESOB.scanline;
+    xpixtile = 0;
+    ypixtile = 0;
+    xpixtile2 = 0;
+    ypixtile2 = 0;
+    //printf("ys: %i\n",scrolly);
+    tilecount = tilecount + bgpattable * 0x1000;
+        while(Xcounter != 0)
+        {
+                graphicline = NESOB.PPUmemory[tilecount];
+                graphicline2 = NESOB.PPUmemory[tilecount + 8];
+                if(Xcounter % 2 == 0)
+                {
+                    chooseRenderColorREWRITE();
+                }
+                while(xpixtile2 != 8)
+                {
+                    palResult = palBlolookup[(graphicline2[bitcount] * 2) + graphicline[bitcount]];
+                    if(MMC3mirror == false)
+                    {
+                        curPixx = (NESOB.scanline * 256) + xpix;
+                        palResult4 = palResult * 4;
+                        pixelsScanF[NESOB.scanline][xpix] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
+                        if(xpix <= 7 && maskProperties[1] == false)
+                        {
+                            pixelsScanF[NESOB.scanline][xpix] = pal[0] << 16 | pal[1] << 8 | pal[2];
+                        }
+                    }
+
+                    if(MMC3mirror == true)
+                    {
+
+                        palResult4 = palResult * 4;
+                        pixelsScanF[NESOB.scanline][xpix] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
+                        if(dummy8 <= 7 && maskProperties[1] == false)
+                        {
+                            pixelsScanF[NESOB.scanline][xpix] = pal[0] << 16 | pal[1] << 8 | pal[2];
+                        }
+
+                    }
+                    xpix++;
+                    bitcount--;
+                    xpixtile2++;
+                }
+            xpixtile++;
+            Xcounter--;
+            xpixtile2 = 0;
+            tiledatalocation1++;
+            //printf("TDL1: 0x%X\n",Xcounter);
+            bitcount = 7;
+            tilelocation = NESOB.PPUmemory[tiledatalocation1];
+            tilecount = ((tilelocation << 4) + (NESOB.scanline % 8));
+            //if(bgpattable == true)
+           // {
+            //    tilecount += 0x1000;
+            //}
+            tilecount += bgpattable * 0x1000;
+
+        }
+        currentnametable = 0;
+        ppurendercount -= 1;
+        if(MMC3mirror == false)
+        {
+            nametableAddr2 = invertedlook1[nametableuse];
+        }
+        if(MMC3mirror == true)
+        {
+            nametableAddr2 = invertedlook2[nametableuse];
+        }
+        //printf("Nametable2: 0x%X\n",nametableAddr2);
+    }
+    return 0;
+    //printf("Nametableuse: %i\n",nametableuse);
+    //printf("Coarse Y Scroll: 0x%X\n",coarseYscroll);
+    //printf("Coarse X Scroll: 0x%X\n",coarseXscroll);
+    doneRenderFrame:
+    if(MMC3mirror == false)
+    {
+
+    blitsu = 1024;
+    mainScreen.w = 256;
+    mainScreen.h = 240;
+    mainScreen.x = 0;
+    mainScreen.y = 0;
+    //printf("Coarse Y Scroll: 0x%X\n",coarseYscroll);
+    //printf("Coarse X Scroll: 0x%X\n",coarseXscroll);
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("Nametableuse: %i\n",nametableuse);
+    SDL_UpdateTexture(textureScanlineF, NULL, pixelsScanF, blitsu);
+    SDL_RenderCopy(renderer, textureScanlineF, NULL, &mainScreen);
+    //mainScreen.y = 240;
+    //SDL_UpdateTexture(textureScanline, NULL, pixels, blitsu);
+    //SDL_RenderCopy(renderer, textureScanline, NULL, &mainScreen);
+    handleSprites();
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF,0,0);
+    //SDL_RenderDrawLine(renderer, 0,175,512,175);
+    notification[0].w = 128;
+    notification[0].h = 20;
+    notification[0].x = 0;
+    notification[0].y = 220;
+    notification[1].w = 128;
+    notification[1].h = 20;
+    notification[1].x = 0;
+    notification[1].y = 220;
+    //SDL_RenderCopy(renderer, textureScanline, NULL, &notification[0]);
+    if(notificationTimer == 0)
+    {
+        notification[1].w = 0;
+        notification[1].h = 0;
+        notification[0].w = 0;
+        notification[0].h = 0;
+    }
+    if(notificationTimer != 0)
+    {
+        SDL_SetRenderDrawColor(renderer, 0xA0,0xA0,0xA0,0x00);
+        SDL_RenderFillRect(renderer, &notification[0]);
+        SDL_RenderCopy(renderer, notiText, NULL, &notification[1]);
+        notificationTimer--;
+    }
+    SDL_RenderPresent(renderer);
+    currentPPUFrame++;
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00,0,0);
+    SDL_RenderClear(renderer);
+    }
+    if(MMC3mirror == true)
+    {
+    blitsu = 1024;
+    //printf("Coarse Y Scroll: 0x%X\n",coarseYscroll);
+    //printf("Coarse X Scroll: 0x%X\n",coarseXscroll);
+    //printf("Scrollx: 0x%X\n",scrollx);
+    //printf("Scrolly: 0x%X\n",scrolly);
+    //printf("Nametableuse: %i\n",nametableuse);
+    mainScreen.w = 256;
+    mainScreen.h = 240;
+    mainScreen.x = 0;
+    mainScreen.y = 0;
+    SDL_UpdateTexture(textureScanlineF, NULL, pixelsScanF, blitsu);
+    SDL_RenderCopy(renderer, textureScanlineF, NULL, &mainScreen);
+    handleSprites();
+    //SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF,0,0);
+    //SDL_RenderDrawLine(renderer, 0,175,512,175);
+    notification[0].w = 128;
+    notification[0].h = 20;
+    notification[0].x = 0;
+    notification[0].y = 220;
+    notification[1].w = 128;
+    notification[1].h = 20;
+    notification[1].x = 0;
+    notification[1].y = 220;
+    //SDL_RenderCopy(renderer, textureScanline, NULL, &notification[0]);
+    if(notificationTimer == 0)
+    {
+        notification[1].w = 0;
+        notification[1].h = 0;
+        notification[0].w = 0;
+        notification[0].h = 0;
+    }
+    if(notificationTimer != 0)
+    {
+        SDL_SetRenderDrawColor(renderer, 0xA0,0xA0,0xA0,0x00);
+        SDL_RenderFillRect(renderer, &notification[0]);
+        SDL_RenderCopy(renderer, notiText, NULL, &notification[1]);
+        notificationTimer--;
+    }
+    SDL_RenderPresent(renderer);
+    currentPPUFrame++;
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00,0,0);
+    SDL_RenderClear(renderer);
+    }
+    return 0;
 }

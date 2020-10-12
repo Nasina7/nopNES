@@ -123,6 +123,7 @@ int handleRewind()
             rewindBufferNumber = 0;
         }
     }
+    return 0;
 }
 void saveNESstate()
 {
@@ -319,6 +320,12 @@ int handleControlsr()
             }
         break;
 
+        case SDLK_l:
+            bit4 = toggleRender;
+            bit4.flip(0);
+            toggleRender = bit4.to_ulong();
+        break;
+
         case SDLK_q:
             if(throttleMode == true)
             {
@@ -479,9 +486,9 @@ int handleSDLcontrol()
         }
     if(aPress == true)
     {
-        rewindActive = true;
-        handleRewind();
-        displayMessagebox("Rewinding...",2);
+        //rewindActive = true;
+        //handleRewind();
+        //displayMessagebox("Rewinding...",2);
     }
     if(aPress == false)
     {

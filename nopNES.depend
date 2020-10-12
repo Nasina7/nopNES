@@ -1,11 +1,11 @@
 # depslib dependency file v1.0
-1593358130 source:/home/zach/codeblocks/nopNES/main.cpp
+1602514587 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
 1593359067 /home/zach/codeblocks/nopNES/cpu.hpp
 	"Controls.hpp"
 
-1593358912 /home/zach/codeblocks/nopNES/include.hpp
+1602514481 /home/zach/codeblocks/nopNES/include.hpp
 	<iostream>
 	<string>
 	<bitset>
@@ -20,10 +20,10 @@
 	<stdlib.h>
 	<unistd.h>
 
-1593358990 /home/zach/codeblocks/nopNES/Controls.hpp
+1602514559 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
-1593358002 /home/zach/codeblocks/nopNES/graphics.hpp
+1602513951 /home/zach/codeblocks/nopNES/graphics.hpp
 	"mappers.hpp"
 
 1522244266 /usr/include/wx-3.0/wx/string.h
@@ -674,20 +674,20 @@
 	"begin_code.h"
 	"close_code.h"
 
-1511036183 /usr/i686-w64-mingw32/include/winapifamily.h
+1573854787 /usr/i686-w64-mingw32/include/winapifamily.h
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/begin_code.h
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/close_code.h
 
-1511036183 /usr/i686-w64-mingw32/include/sys/types.h
+1573854787 /usr/i686-w64-mingw32/include/sys/types.h
 	<crtdefs.h>
 	<_mingw_off_t.h>
 
-1511036183 /usr/i686-w64-mingw32/include/crtdefs.h
-	<_mingw.h>
+1573854787 /usr/i686-w64-mingw32/include/crtdefs.h
+	<corecrt.h>
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw.h
 	"_mingw_mac.h"
 	"_mingw_secapi.h"
 	"_cygwin.h"
@@ -695,112 +695,108 @@
 	"sdks/_mingw_directx.h"
 	"sdks/_mingw_ddk.h"
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_mac.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_mac.h
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_secapi.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_secapi.h
 
-1511036183 /usr/i686-w64-mingw32/include/_cygwin.h
+1573854787 /usr/i686-w64-mingw32/include/_cygwin.h
 	<stddef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/stddef.h
+1573854787 /usr/i686-w64-mingw32/include/stddef.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/vadefs.h
+1573854787 /usr/i686-w64-mingw32/include/vadefs.h
 	<_mingw.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sdks/_mingw_directx.h
+1573854787 /usr/i686-w64-mingw32/include/sdks/_mingw_directx.h
 
-1511036183 /usr/i686-w64-mingw32/include/sdks/_mingw_ddk.h
+1573854787 /usr/i686-w64-mingw32/include/sdks/_mingw_ddk.h
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_off_t.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_off_t.h
 
-1511036183 /usr/i686-w64-mingw32/include/stdio.h
+1573854787 /usr/i686-w64-mingw32/include/stdio.h
 	<crtdefs.h>
-	<_mingw_print_push.h>
 	<_mingw_off_t.h>
 	<swprintf.inl>
 	<sec_api/stdio_s.h>
-	<_mingw_print_pop.h>
 
 1511036183 /usr/i686-w64-mingw32/include/_mingw_print_push.h
 
-1511036183 /usr/i686-w64-mingw32/include/swprintf.inl
+1573854787 /usr/i686-w64-mingw32/include/swprintf.inl
 	<vadefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/stdio_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/stdio_s.h
 	<stdio.h>
 
 1511036183 /usr/i686-w64-mingw32/include/_mingw_print_pop.h
 
-1511036183 /usr/i686-w64-mingw32/include/stdlib.h
-	<crtdefs.h>
+1573854787 /usr/i686-w64-mingw32/include/stdlib.h
+	<corecrt.h>
+	<corecrt_wstdlib.h>
 	<limits.h>
 	<sec_api/stdlib_s.h>
 	<malloc.h>
 
-1511036183 /usr/i686-w64-mingw32/include/limits.h
+1573854787 /usr/i686-w64-mingw32/include/limits.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/stdlib_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/stdlib_s.h
 	<stdlib.h>
 
-1511036183 /usr/i686-w64-mingw32/include/malloc.h
+1573854787 /usr/i686-w64-mingw32/include/malloc.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/stdarg.h
+1573854787 /usr/i686-w64-mingw32/include/stdarg.h
 	<_mingw_stdarg.h>
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_stdarg.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_stdarg.h
 	<vadefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/memory.h
+1573854787 /usr/i686-w64-mingw32/include/memory.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/string.h
+1573854787 /usr/i686-w64-mingw32/include/string.h
 	<crtdefs.h>
 	<sec_api/string_s.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/string_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/string_s.h
 	<string.h>
 
-1511036183 /usr/i686-w64-mingw32/include/strings.h
+1573854787 /usr/i686-w64-mingw32/include/strings.h
 	<string.h>
 
-1511036183 /usr/i686-w64-mingw32/include/wchar.h
-	<crtdefs.h>
-	<_mingw_print_push.h>
+1573854787 /usr/i686-w64-mingw32/include/wchar.h
+	<corecrt.h>
+	<corecrt_wstdlib.h>
 	<_mingw_off_t.h>
 	<_mingw_stat64.h>
 	<swprintf.inl>
 	<sec_api/wchar_s.h>
-	<_mingw_print_pop.h>
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_stat64.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_stat64.h
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/wchar_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/wchar_s.h
 	<wchar.h>
 
-1511036183 /usr/i686-w64-mingw32/include/inttypes.h
+1573854787 /usr/i686-w64-mingw32/include/inttypes.h
 	<crtdefs.h>
 	<stdint.h>
 	<stddef.h>
-	<_mingw_print_push.h>
-	<_mingw_print_pop.h>
 
-1511036183 /usr/i686-w64-mingw32/include/stdint.h
+1573854787 /usr/i686-w64-mingw32/include/stdint.h
 	<crtdefs.h>
 	<stddef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/ctype.h
+1573854787 /usr/i686-w64-mingw32/include/ctype.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/math.h
+1573854787 /usr/i686-w64-mingw32/include/math.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/float.h
+1573854787 /usr/i686-w64-mingw32/include/float.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sal.h
+1573854787 /usr/i686-w64-mingw32/include/sal.h
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/SDL_assert.h
 	"SDL_config.h"
@@ -808,11 +804,11 @@
 	<signal.h>
 	"close_code.h"
 
-1511036183 /usr/i686-w64-mingw32/include/signal.h
+1573854787 /usr/i686-w64-mingw32/include/signal.h
 	<crtdefs.h>
 	<pthread_signal.h>
 
-1511036183 /usr/i686-w64-mingw32/include/pthread_signal.h
+1573854787 /usr/i686-w64-mingw32/include/pthread_signal.h
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/SDL_atomic.h
 	"SDL_stdinc.h"
@@ -859,8 +855,9 @@
 	<stdlib.h>
 	"close_code.h"
 
-1511036183 /usr/i686-w64-mingw32/include/process.h
+1573854787 /usr/i686-w64-mingw32/include/process.h
 	<crtdefs.h>
+	<corecrt_startup.h>
 	<sys/types.h>
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/SDL_rwops.h
@@ -889,7 +886,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1511036183 /usr/i686-w64-mingw32/include/intrin.h
+1573854787 /usr/i686-w64-mingw32/include/intrin.h
 	<crtdefs.h>
 	<setjmp.h>
 	<stddef.h>
@@ -905,14 +902,14 @@
 	<pmmintrin.h>
 	<mm3dnow.h>
 
-1511036183 /usr/i686-w64-mingw32/include/setjmp.h
+1573854787 /usr/i686-w64-mingw32/include/setjmp.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/intrin-impl.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/intrin-impl.h
 	<intrin.h>
 	<psdk_inc/intrin-impl.h>
 
-1511036183 /usr/i686-w64-mingw32/include/errno.h
+1573854787 /usr/i686-w64-mingw32/include/errno.h
 	<crtdefs.h>
 
 1540998544 /home/zach/SDL2-2.0.9/i686-w64-mingw32/include/SDL2/SDL_events.h
@@ -1125,7 +1122,7 @@
 	<utility>
 	<functional>
 
-1511036183 /usr/i686-w64-mingw32/include/windows.h
+1573854787 /usr/i686-w64-mingw32/include/windows.h
 	<_mingw.h>
 	<sdkddkver.h>
 	<winresrc.h>
@@ -1165,9 +1162,9 @@
 	<mcx.h>
 	<imm.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sdkddkver.h
+1573854787 /usr/i686-w64-mingw32/include/sdkddkver.h
 
-1511036183 /usr/i686-w64-mingw32/include/winresrc.h
+1573854787 /usr/i686-w64-mingw32/include/winresrc.h
 	<winuser.rh>
 	<commctrl.rh>
 	<dde.rh>
@@ -1175,39 +1172,40 @@
 	<dlgs.h>
 	<winver.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winuser.rh
+1573854787 /usr/i686-w64-mingw32/include/winuser.rh
 
-1511036183 /usr/i686-w64-mingw32/include/commctrl.rh
+1573854787 /usr/i686-w64-mingw32/include/commctrl.rh
 
-1511036183 /usr/i686-w64-mingw32/include/dde.rh
+1573854787 /usr/i686-w64-mingw32/include/dde.rh
 
-1511036183 /usr/i686-w64-mingw32/include/winnt.rh
+1573854787 /usr/i686-w64-mingw32/include/winnt.rh
 
-1511036183 /usr/i686-w64-mingw32/include/dlgs.h
+1573854787 /usr/i686-w64-mingw32/include/dlgs.h
 
-1511036183 /usr/i686-w64-mingw32/include/winver.h
+1573854787 /usr/i686-w64-mingw32/include/winver.h
 	<_mingw.h>
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/_mingw_unicode.h
+1573854787 /usr/i686-w64-mingw32/include/_mingw_unicode.h
 
-1511036183 /usr/i686-w64-mingw32/include/excpt.h
+1573854787 /usr/i686-w64-mingw32/include/excpt.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/windef.h
+1573854787 /usr/i686-w64-mingw32/include/windef.h
 	<minwindef.h>
 	<winnt.h>
 
-1511036183 /usr/i686-w64-mingw32/include/minwindef.h
+1573854787 /usr/i686-w64-mingw32/include/minwindef.h
 	<_mingw.h>
 	<winapifamily.h>
 	<specstrings.h>
 	<winnt.h>
 
-1511036183 /usr/i686-w64-mingw32/include/specstrings.h
+1573854787 /usr/i686-w64-mingw32/include/specstrings.h
 	<sal.h>
+	<driverspecs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winnt.h
+1573854787 /usr/i686-w64-mingw32/include/winnt.h
 	<_mingw_unicode.h>
 	<_mingw.h>
 	<ctype.h>
@@ -1220,6 +1218,8 @@
 	<basetsd.h>
 	<guiddef.h>
 	<x86intrin.h>
+	<emmintrin.h>
+	<emmintrin.h>
 	<pshpack4.h>
 	<poppack.h>
 	"pshpack4.h"
@@ -1239,27 +1239,27 @@
 	"pshpack4.h"
 	"poppack.h"
 
-1511036183 /usr/i686-w64-mingw32/include/apiset.h
+1573854787 /usr/i686-w64-mingw32/include/apiset.h
 	<_mingw.h>
 
-1511036183 /usr/i686-w64-mingw32/include/basetsd.h
+1573854787 /usr/i686-w64-mingw32/include/basetsd.h
 	<_mingw.h>
 
-1511036183 /usr/i686-w64-mingw32/include/guiddef.h
+1573854787 /usr/i686-w64-mingw32/include/guiddef.h
 	<_mingw.h>
 	<string.h>
 
-1511036183 /usr/i686-w64-mingw32/include/pshpack4.h
+1573854787 /usr/i686-w64-mingw32/include/pshpack4.h
 
-1511036183 /usr/i686-w64-mingw32/include/poppack.h
+1573854787 /usr/i686-w64-mingw32/include/poppack.h
 
-1511036183 /usr/i686-w64-mingw32/include/pshpack2.h
+1573854787 /usr/i686-w64-mingw32/include/pshpack2.h
 
-1511036183 /usr/i686-w64-mingw32/include/pshpack8.h
+1573854787 /usr/i686-w64-mingw32/include/pshpack8.h
 
-1511036183 /usr/i686-w64-mingw32/include/ktmtypes.h
+1573854787 /usr/i686-w64-mingw32/include/ktmtypes.h
 
-1511036183 /usr/i686-w64-mingw32/include/winbase.h
+1573854787 /usr/i686-w64-mingw32/include/winbase.h
 	<_mingw_unicode.h>
 	<apisetcconv.h>
 	<winapifamily.h>
@@ -1296,182 +1296,182 @@
 	<winerror.h>
 	<timezoneapi.h>
 
-1511036183 /usr/i686-w64-mingw32/include/apisetcconv.h
+1573854787 /usr/i686-w64-mingw32/include/apisetcconv.h
 
-1511036183 /usr/i686-w64-mingw32/include/minwinbase.h
+1573854787 /usr/i686-w64-mingw32/include/minwinbase.h
 
-1511036183 /usr/i686-w64-mingw32/include/bemapiset.h
+1573854787 /usr/i686-w64-mingw32/include/bemapiset.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/debugapi.h
+1573854787 /usr/i686-w64-mingw32/include/debugapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/errhandlingapi.h
+1573854787 /usr/i686-w64-mingw32/include/errhandlingapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/fibersapi.h
+1573854787 /usr/i686-w64-mingw32/include/fibersapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/fileapi.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-	<minwinbase.h>
-
-1511036183 /usr/i686-w64-mingw32/include/handleapi.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/heapapi.h
+1573854787 /usr/i686-w64-mingw32/include/fileapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/ioapiset.h
+1573854787 /usr/i686-w64-mingw32/include/handleapi.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/heapapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/interlockedapi.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/jobapi.h
+1573854787 /usr/i686-w64-mingw32/include/ioapiset.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/libloaderapi.h
+1573854787 /usr/i686-w64-mingw32/include/interlockedapi.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/jobapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/memoryapi.h
+1573854787 /usr/i686-w64-mingw32/include/libloaderapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/namedpipeapi.h
+1573854787 /usr/i686-w64-mingw32/include/memoryapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/namespaceapi.h
+1573854787 /usr/i686-w64-mingw32/include/namedpipeapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/processenv.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/processthreadsapi.h
+1573854787 /usr/i686-w64-mingw32/include/namespaceapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/processtopologyapi.h
+1573854787 /usr/i686-w64-mingw32/include/processenv.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/processthreadsapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/profileapi.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/realtimeapiset.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/securityappcontainer.h
+1573854787 /usr/i686-w64-mingw32/include/processtopologyapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/securitybaseapi.h
+1573854787 /usr/i686-w64-mingw32/include/profileapi.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/realtimeapiset.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/securityappcontainer.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/synchapi.h
+1573854787 /usr/i686-w64-mingw32/include/securitybaseapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sysinfoapi.h
+1573854787 /usr/i686-w64-mingw32/include/synchapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/systemtopologyapi.h
+1573854787 /usr/i686-w64-mingw32/include/sysinfoapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/threadpoolapiset.h
+1573854787 /usr/i686-w64-mingw32/include/systemtopologyapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/threadpoollegacyapiset.h
+1573854787 /usr/i686-w64-mingw32/include/threadpoolapiset.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/utilapiset.h
-	<apiset.h>
-	<apisetcconv.h>
-	<minwindef.h>
-
-1511036183 /usr/i686-w64-mingw32/include/wow64apiset.h
+1573854787 /usr/i686-w64-mingw32/include/threadpoollegacyapiset.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winerror.h
+1573854787 /usr/i686-w64-mingw32/include/utilapiset.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+
+1573854787 /usr/i686-w64-mingw32/include/wow64apiset.h
+	<apiset.h>
+	<apisetcconv.h>
+	<minwindef.h>
+	<minwinbase.h>
+
+1573854787 /usr/i686-w64-mingw32/include/winerror.h
 	<fltwinerror.h>
 
-1511036183 /usr/i686-w64-mingw32/include/fltwinerror.h
+1573854787 /usr/i686-w64-mingw32/include/fltwinerror.h
 
-1511036183 /usr/i686-w64-mingw32/include/timezoneapi.h
+1573854787 /usr/i686-w64-mingw32/include/timezoneapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/wingdi.h
+1573854787 /usr/i686-w64-mingw32/include/wingdi.h
 	<winapifamily.h>
 	<_mingw_unicode.h>
 	<pshpack1.h>
@@ -1485,9 +1485,9 @@
 	<pshpack4.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/pshpack1.h
+1573854787 /usr/i686-w64-mingw32/include/pshpack1.h
 
-1511036183 /usr/i686-w64-mingw32/include/winuser.h
+1573854787 /usr/i686-w64-mingw32/include/winuser.h
 	<winapifamily.h>
 	<_mingw_unicode.h>
 	<apisetcconv.h>
@@ -1499,66 +1499,67 @@
 	<poppack.h>
 	<tvout.h>
 
-1511036183 /usr/i686-w64-mingw32/include/tvout.h
+1573854787 /usr/i686-w64-mingw32/include/tvout.h
 	<guiddef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winnls.h
+1573854787 /usr/i686-w64-mingw32/include/winnls.h
 	<winapifamily.h>
 	<datetimeapi.h>
 	<libloaderapi.h>
 	<stringapiset.h>
 
-1511036183 /usr/i686-w64-mingw32/include/datetimeapi.h
+1573854787 /usr/i686-w64-mingw32/include/datetimeapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<minwinbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/stringapiset.h
+1573854787 /usr/i686-w64-mingw32/include/stringapiset.h
 	<apiset.h>
 	<apisetcconv.h>
 	<minwindef.h>
 	<winnls.h>
 
-1511036183 /usr/i686-w64-mingw32/include/wincon.h
+1573854787 /usr/i686-w64-mingw32/include/wincon.h
 	<_mingw_unicode.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winreg.h
+1573854787 /usr/i686-w64-mingw32/include/winreg.h
 	<_mingw_unicode.h>
+	<winapifamily.h>
 	<reason.h>
 
-1511036183 /usr/i686-w64-mingw32/include/reason.h
+1573854787 /usr/i686-w64-mingw32/include/reason.h
 
-1511036183 /usr/i686-w64-mingw32/include/winnetwk.h
+1573854787 /usr/i686-w64-mingw32/include/winnetwk.h
 	<winapifamily.h>
 	<_mingw_unicode.h>
 	<wnnc.h>
 
-1511036183 /usr/i686-w64-mingw32/include/wnnc.h
+1573854787 /usr/i686-w64-mingw32/include/wnnc.h
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/virtdisk.h
+1573854787 /usr/i686-w64-mingw32/include/virtdisk.h
 
-1511036183 /usr/i686-w64-mingw32/include/cderr.h
+1573854787 /usr/i686-w64-mingw32/include/cderr.h
 
-1511036183 /usr/i686-w64-mingw32/include/dde.h
+1573854787 /usr/i686-w64-mingw32/include/dde.h
 	<windef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/ddeml.h
+1573854787 /usr/i686-w64-mingw32/include/ddeml.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/lzexpand.h
+1573854787 /usr/i686-w64-mingw32/include/lzexpand.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/mmsystem.h
+1573854787 /usr/i686-w64-mingw32/include/mmsystem.h
 	<_mingw_unicode.h>
 	<pshpack1.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/nb30.h
+1573854787 /usr/i686-w64-mingw32/include/nb30.h
 
-1511036183 /usr/i686-w64-mingw32/include/rpc.h
+1573854787 /usr/i686-w64-mingw32/include/rpc.h
 	<_mingw.h>
 	<windows.h>
 	<basetsd.h>
@@ -1571,37 +1572,37 @@
 	<rpcasync.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcdce.h
+1573854787 /usr/i686-w64-mingw32/include/rpcdce.h
 	<_mingw_unicode.h>
 	<specstrings.h>
 	<guiddef.h>
 	<rpcdcep.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcdcep.h
+1573854787 /usr/i686-w64-mingw32/include/rpcdcep.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcnsi.h
+1573854787 /usr/i686-w64-mingw32/include/rpcnsi.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcnterr.h
+1573854787 /usr/i686-w64-mingw32/include/rpcnterr.h
 
-1511036183 /usr/i686-w64-mingw32/include/rpcasync.h
+1573854787 /usr/i686-w64-mingw32/include/rpcasync.h
 	<_mingw_unicode.h>
 	<pshpack8.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/shellapi.h
+1573854787 /usr/i686-w64-mingw32/include/shellapi.h
 	<winapifamily.h>
 	<_mingw_unicode.h>
 	<specstrings.h>
 	<pshpack1.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winperf.h
+1573854787 /usr/i686-w64-mingw32/include/winperf.h
 	<pshpack8.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winsock.h
+1573854787 /usr/i686-w64-mingw32/include/winsock.h
 	<windows.h>
 	<_timeval.h>
 	<_bsd_types.h>
@@ -1614,34 +1615,34 @@
 	<psdk_inc/_xmitfile.h>
 	<psdk_inc/_wsa_errnos.h>
 
-1511036183 /usr/i686-w64-mingw32/include/_timeval.h
+1573854787 /usr/i686-w64-mingw32/include/_timeval.h
 
-1511036183 /usr/i686-w64-mingw32/include/_bsd_types.h
+1573854787 /usr/i686-w64-mingw32/include/_bsd_types.h
 	<_mingw.h>
 
-1511036183 /usr/i686-w64-mingw32/include/inaddr.h
+1573854787 /usr/i686-w64-mingw32/include/inaddr.h
 	<_bsd_types.h>
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_socket_types.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_socket_types.h
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_fd_types.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_fd_types.h
 	<psdk_inc/_socket_types.h>
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_ip_types.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_ip_types.h
 	<_bsd_types.h>
 	<inaddr.h>
 	<_timeval.h>
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_ip_mreq1.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_ip_mreq1.h
 	<inaddr.h>
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_wsadata.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_wsadata.h
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_xmitfile.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_xmitfile.h
 
-1511036183 /usr/i686-w64-mingw32/include/psdk_inc/_wsa_errnos.h
+1573854787 /usr/i686-w64-mingw32/include/psdk_inc/_wsa_errnos.h
 
-1511036183 /usr/i686-w64-mingw32/include/wincrypt.h
+1573854787 /usr/i686-w64-mingw32/include/wincrypt.h
 	<_mingw.h>
 	<_mingw_unicode.h>
 	<guiddef.h>
@@ -1651,43 +1652,43 @@
 	<ncrypt.h>
 	<dpapi.h>
 
-1511036183 /usr/i686-w64-mingw32/include/bcrypt.h
+1573854787 /usr/i686-w64-mingw32/include/bcrypt.h
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/ncrypt.h
+1573854787 /usr/i686-w64-mingw32/include/ncrypt.h
 	<winapifamily.h>
 	<bcrypt.h>
 
-1511036183 /usr/i686-w64-mingw32/include/dpapi.h
+1573854787 /usr/i686-w64-mingw32/include/dpapi.h
 
-1511036183 /usr/i686-w64-mingw32/include/winefs.h
+1573854787 /usr/i686-w64-mingw32/include/winefs.h
 
-1511036183 /usr/i686-w64-mingw32/include/winscard.h
+1573854787 /usr/i686-w64-mingw32/include/winscard.h
 	<_mingw_unicode.h>
 	<wtypes.h>
 	<winioctl.h>
 	"winsmcrd.h"
 	"SCardErr.h"
 
-1511036183 /usr/i686-w64-mingw32/include/wtypes.h
+1573854787 /usr/i686-w64-mingw32/include/wtypes.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
 	<ole2.h>
 	<wtypesbase.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcndr.h
+1573854787 /usr/i686-w64-mingw32/include/rpcndr.h
 	<pshpack8.h>
 	<basetsd.h>
 	<rpcnsip.h>
 	<rpcsal.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/rpcnsip.h
+1573854787 /usr/i686-w64-mingw32/include/rpcnsip.h
 
-1511036183 /usr/i686-w64-mingw32/include/rpcsal.h
+1573854787 /usr/i686-w64-mingw32/include/rpcsal.h
 
-1511036183 /usr/i686-w64-mingw32/include/ole2.h
+1573854787 /usr/i686-w64-mingw32/include/ole2.h
 	<winapifamily.h>
 	<pshpack8.h>
 	<winerror.h>
@@ -1696,7 +1697,7 @@
 	<oleidl.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/objbase.h
+1573854787 /usr/i686-w64-mingw32/include/objbase.h
 	<winapifamily.h>
 	<rpc.h>
 	<rpcndr.h>
@@ -1707,7 +1708,7 @@
 	<propidl.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/combaseapi.h
+1573854787 /usr/i686-w64-mingw32/include/combaseapi.h
 	<apiset.h>
 	<apisetcconv.h>
 	<rpc.h>
@@ -1721,7 +1722,7 @@
 	<cguid.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/wtypesbase.h
+1573854787 /usr/i686-w64-mingw32/include/wtypesbase.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1729,7 +1730,7 @@
 	<basetsd.h>
 	<guiddef.h>
 
-1511036183 /usr/i686-w64-mingw32/include/unknwnbase.h
+1573854787 /usr/i686-w64-mingw32/include/unknwnbase.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1737,7 +1738,7 @@
 	<wtypesbase.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/objidlbase.h
+1573854787 /usr/i686-w64-mingw32/include/objidlbase.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1746,9 +1747,9 @@
 	<wtypesbase.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/cguid.h
+1573854787 /usr/i686-w64-mingw32/include/cguid.h
 
-1511036183 /usr/i686-w64-mingw32/include/objidl.h
+1573854787 /usr/i686-w64-mingw32/include/objidl.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1758,7 +1759,7 @@
 	<winapifamily.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/unknwn.h
+1573854787 /usr/i686-w64-mingw32/include/unknwn.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1766,7 +1767,7 @@
 	<wtypes.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/urlmon.h
+1573854787 /usr/i686-w64-mingw32/include/urlmon.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1777,7 +1778,7 @@
 	<msxml.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/oleidl.h
+1573854787 /usr/i686-w64-mingw32/include/oleidl.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1785,7 +1786,7 @@
 	<objidl.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/servprov.h
+1573854787 /usr/i686-w64-mingw32/include/servprov.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1793,7 +1794,7 @@
 	<objidl.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/msxml.h
+1573854787 /usr/i686-w64-mingw32/include/msxml.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1802,7 +1803,7 @@
 	<objidl.h>
 	<oaidl.h>
 
-1511036183 /usr/i686-w64-mingw32/include/oaidl.h
+1573854787 /usr/i686-w64-mingw32/include/oaidl.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1810,7 +1811,7 @@
 	<objidl.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/propidl.h
+1573854787 /usr/i686-w64-mingw32/include/propidl.h
 	<rpc.h>
 	<rpcndr.h>
 	<windows.h>
@@ -1820,12 +1821,12 @@
 	<oaidl.h>
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/oleauto.h
+1573854787 /usr/i686-w64-mingw32/include/oleauto.h
 	<pshpack8.h>
 	<oaidl.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winioctl.h
+1573854787 /usr/i686-w64-mingw32/include/winioctl.h
 	<pshpack1.h>
 	<poppack.h>
 	<pshpack1.h>
@@ -1839,62 +1840,62 @@
 	<pshpack1.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winsmcrd.h
+1573854787 /usr/i686-w64-mingw32/include/winsmcrd.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winspool.h
+1573854787 /usr/i686-w64-mingw32/include/winspool.h
 	<_mingw_unicode.h>
 	<prsht.h>
 
-1511036183 /usr/i686-w64-mingw32/include/prsht.h
+1573854787 /usr/i686-w64-mingw32/include/prsht.h
 	<_mingw_unicode.h>
 	<pshpack8.h>
 	<pshpack4.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/ole.h
+1573854787 /usr/i686-w64-mingw32/include/ole.h
 	<winapifamily.h>
 
-1511036183 /usr/i686-w64-mingw32/include/commdlg.h
+1573854787 /usr/i686-w64-mingw32/include/commdlg.h
 	<winapifamily.h>
 	<_mingw_unicode.h>
 	<prsht.h>
 	<pshpack1.h>
 	<poppack.h>
 
-1511036183 /usr/i686-w64-mingw32/include/stralign.h
+1573854787 /usr/i686-w64-mingw32/include/stralign.h
 	<sec_api/stralign_s.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/stralign_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/stralign_s.h
 	<stralign.h>
 
-1511036183 /usr/i686-w64-mingw32/include/winsvc.h
+1573854787 /usr/i686-w64-mingw32/include/winsvc.h
 	<_mingw.h>
 	<_mingw_unicode.h>
 	<apisetcconv.h>
 
-1511036183 /usr/i686-w64-mingw32/include/mcx.h
+1573854787 /usr/i686-w64-mingw32/include/mcx.h
 
-1511036183 /usr/i686-w64-mingw32/include/imm.h
+1573854787 /usr/i686-w64-mingw32/include/imm.h
 	<_mingw_unicode.h>
 
-1511036183 /usr/i686-w64-mingw32/include/unistd.h
+1573854787 /usr/i686-w64-mingw32/include/unistd.h
 	<io.h>
 	<process.h>
 	<getopt.h>
 	<sys/types.h>
 	<pthread_unistd.h>
 
-1511036183 /usr/i686-w64-mingw32/include/io.h
+1573854787 /usr/i686-w64-mingw32/include/io.h
 	<crtdefs.h>
 	<string.h>
 	<_mingw_off_t.h>
 	<string.h>
 
-1511036183 /usr/i686-w64-mingw32/include/getopt.h
+1573854787 /usr/i686-w64-mingw32/include/getopt.h
 	<crtdefs.h>
 
-1511036183 /usr/i686-w64-mingw32/include/pthread_unistd.h
+1573854787 /usr/i686-w64-mingw32/include/pthread_unistd.h
 
 1564029277 /home/zach/SDL2-2.0.10/i686-w64-mingw32/include/SDL2/SDL.h
 	"SDL_main.h"
@@ -2246,7 +2247,7 @@
 1592319342 /home/zach/codeblocks/nopNES/mappers.hpp
 	"sound.hpp"
 
-1592261790 /home/zach/codeblocks/nopNES/sound.hpp
+1598876266 /home/zach/codeblocks/nopNES/sound.hpp
 	"include.hpp"
 	<SDL2/SDL_mixer.h>
 	<SDL_mixer.h>
@@ -2262,19 +2263,35 @@
 	"begin_code.h"
 	"close_code.h"
 
-1511036183 /usr/i686-w64-mingw32/include/time.h
+1573854787 /usr/i686-w64-mingw32/include/time.h
 	<crtdefs.h>
 	<_timeval.h>
 	<sys/timeb.h>
 	<pthread_time.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sys/timeb.h
+1573854787 /usr/i686-w64-mingw32/include/sys/timeb.h
 	<crtdefs.h>
 	<sec_api/sys/timeb_s.h>
 
-1511036183 /usr/i686-w64-mingw32/include/sec_api/sys/timeb_s.h
+1573854787 /usr/i686-w64-mingw32/include/sec_api/sys/timeb_s.h
 	<sys/timeb.h>
 
-1511036183 /usr/i686-w64-mingw32/include/pthread_time.h
+1573854787 /usr/i686-w64-mingw32/include/pthread_time.h
 	<sys/timeb.h>
+
+1573854787 /usr/i686-w64-mingw32/include/corecrt.h
+	<_mingw.h>
+
+1573854787 /usr/i686-w64-mingw32/include/corecrt_wstdlib.h
+	<corecrt.h>
+
+1573854787 /usr/i686-w64-mingw32/include/corecrt_startup.h
+
+1547322281 /home/zach/SDL2ttfwin/include/SDL2/SDL_ttf.h
+	"SDL.h"
+	"begin_code.h"
+	"close_code.h"
+
+1573854787 /usr/i686-w64-mingw32/include/driverspecs.h
+	<specstrings.h>
 

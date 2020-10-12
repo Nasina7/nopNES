@@ -9,7 +9,7 @@ It has unfinished support for mapper 7, 9, 52, 90, 209, and 211.
 In the bin/Debug folder, there is a file called nopNES.exe.  
 Download that, as well as pal.pal and ubuntu.ttf and put those in a seperate folder.  
 Put your roms there as well.  
-Download all of the DLLS and put it in that folder too  
+Download the file named WinDLL.zip and extract it into the directory with the executable.  
 Then, double click on nopNES.exe to run it.  
 Enter the name of the rom and play.  
 NOTE!  Windows builds are untested and experimental and may contain bugs!  
