@@ -12,10 +12,11 @@ void nesPowerOn()
 bool VBLFLAGcleardelay;
 bool NMIithrottle;
 uint64_t cyclesAtNMI;
+uint8_t replaceB4;
 void handleNMI()
 {
-    NESOB.Xbitbuffer = NESOB.memory[0x2000];
-    if(NESOB.Xbitbuffer[7] == 1 && NMIrequest == true)
+    replaceB4 = NESOB.memory[0x2000];
+    if((replaceB4 & 0x80) != 0 && NMIrequest == true)
     {
         //printf("Scanline %i\n",NESOB.scanline);
         //printf("Frame %i\n",currentFrame);
@@ -63,6 +64,7 @@ void handleInterrupts()
     handleNMI();
     //handleSoundIRQ();
 }
+uint8_t replaceB1;
 void doOpcode()
 {
     switch (NESOB.memory[NESOB.pc])
@@ -71,21 +73,28 @@ void doOpcode()
         case 0x00:
             NESOB.pc += 2;
             //printf("0x00\n");
-            tempBitBuffer = NESOB.pflag;
             //breakpoint = true;
             NESOB.tempValue16 = 0x01 << 8 | NESOB.sp;
             NESmemWrite(NESOB.pc >> 8, NESOB.tempValue16);
             NESOB.tempValue16--;
             NESmemWrite(NESOB.pc, NESOB.tempValue16);
             NESOB.tempValue16--;
-            NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Pbitbuffer[4] = 1;
-            NESOB.Pbitbuffer[5] = 1;
+
+            //NESOB.Pbitbuffer = NESOB.pflag;
+            //NESOB.Pbitbuffer[4] = 1;
+            //NESOB.Pbitbuffer[5] = 1;
+
+            NESOB.pflag = NESOB.pflag | 0x30;
+
             //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
             NESmemWrite(NESOB.Pbitbuffer.to_ulong(), NESOB.tempValue16);
-            NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Pbitbuffer[2] = 1;
-            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+
+            //NESOB.Pbitbuffer = NESOB.pflag;
+            //NESOB.Pbitbuffer[2] = 1;
+            //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+
+            NESOB.pflag = NESOB.pflag | 0x4;
+
             NESOB.sp -= 3;
             NESOB.pc = NESmemRead(0xFFFF) << 8 | NESmemRead(0xFFFE);
             NESOB.cycles += 7;
@@ -126,12 +135,16 @@ void doOpcode()
         case 0x06:
             NESOB.tempValue16 = 0x00 << 8 | NESmemRead(NESOB.pc + 1);
             NESOB.prevValue = NESOB.memory[NESOB.tempValue16];
-            NESOB.Pbitbuffer = NESOB.pflag;
-            NESOB.Xbitbuffer = NESOB.memory[NESOB.tempValue16];
-            NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
-            NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
-            NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
-            NESmemWrite(NESOB.Xbitbuffer.to_ulong(), NESOB.tempValue16);
+
+            //NESOB.Pbitbuffer = NESOB.pflag;
+            replaceB1 = NESOB.memory[NESOB.tempValue16];
+            //NESOB.Pbitbuffer[0] = NESOB.Xbitbuffer[7];
+            //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+            //NESOB.Xbitbuffer = NESOB.Xbitbuffer << 1;
+            NESOB.pflag = nBit.setBitToVal(NESOB.pflag,nBit.testBit(replaceB1, 7), 0);
+            replaceB1 = replaceB1 << 1;
+
+            NESmemWrite(replaceB1, NESOB.tempValue16);
             handleFlags7(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             handleFlags1(NESOB.memory[NESOB.tempValue16],NESOB.prevValue);
             NESOB.pc += 2;

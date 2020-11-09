@@ -56,11 +56,7 @@ SDL_Color greyM = {0x80,0x80,0x80,0x80};
 const char *messageBuf;
 void displayMessagebox(std::string line1, uint16_t amountOfFrameDisplay)
 {
-    messageBuf = line1.c_str();
-    TTF_Font* textboxFont5 = TTF_OpenFont("ubuntu.ttf", 15); //this opens a font style and sets a size
-    SDL_Surface* notiSurf = TTF_RenderText_Blended_Wrapped(textboxFont5, messageBuf, sdlBlack,128);
-    notiText = SDL_CreateTextureFromSurface(renderer, notiSurf);
-    notificationTimer = amountOfFrameDisplay;
+
 }
 void handleGrid()
 {
@@ -166,10 +162,20 @@ void palDetermine()
 }
 uint8_t prevBlock;
 uint16_t palLocLookup[4] = {0x3F01, 0x3F05, 0x3F09, 0x3F0D};
+uint8_t testFix;
 void palDetermineREWRITE()
 {
-    currentGridat = NESOB.PPUmemory[(nametableAddr2 + 0x3C0) + currentGrid];
-    palLocate = palLocLookup[(currentGridat[currentBlock + 1] * 2) + currentGridat[currentBlock]];
+    testFix = NESOB.PPUmemory[(nametableAddr2 + 0x3C0) + currentGrid];
+
+    //palLocate = palLocLookup[(currentGridat[currentBlock + 1] * 2) + currentGridat[currentBlock]];
+
+    palLocate = palLocLookup[(nBit.testBit(
+                                           testFix,
+                                           currentBlock + 1) * 2) +
+                              nBit.testBit(
+                                           testFix,
+                                           currentBlock)];
+
     bgcol = NESOB.PPUmemory[0x3F00] * 3;
     pal[0] = pallete[bgcol];
     pal[1] = pallete[bgcol + 1];
@@ -256,10 +262,13 @@ void getBGcolor()
     //printf("bgSto 0x%X\n",bgSto);
 }
 uint8_t sprResult;
+uint8_t graphicLiness;
+uint8_t graphicLiness2;
 void chooseRenderColorSprite(uint8_t spritePal)
 {
-    OAMbitbuffer = spritePal;
-    palLocateS = palLocateLook[(OAMbitbuffer[1] * 2) + OAMbitbuffer[0]];
+    palLocateS = palLocateLook[
+                            (nBit.testBit(spritePal, 1) * 2) +
+                             nBit.testBit(spritePal, 0)];
     bgcolS = NESOB.PPUmemory[0x3F10];
     bgcolS = bgcolS * 3;
     pal00S[0] = pallete[bgcolS];
@@ -288,24 +297,24 @@ void chooseRenderColorSprite(uint8_t spritePal)
     color_01 = {pal01S[0],pal01S[1],pal01S[2],pal01S[3]};
     color_02 = {pal10S[0],pal10S[1],pal10S[2],pal10S[3]};
     color_03 = {pal11S[0],pal11S[1],pal11S[2],pal11S[3]};
-    if(graphiclineS[bitcountS] == 0 && graphicline2S[bitcountS] == 0)
+    if(nBit.testBit(graphicLiness, bitcountS) == 0 && nBit.testBit(graphicLiness2, bitcountS) == 0)
     {
         SDL_SetRenderDrawColor(renderer,color_00.r,color_00.g,color_00.b,color_00.a);
         dontRenderSprite = true;
     }
-    if(graphiclineS[bitcountS] == 1 && graphicline2S[bitcountS] == 0)
+    if(nBit.testBit(graphicLiness, bitcountS) == 1 && nBit.testBit(graphicLiness2, bitcountS) == 0)
     {
         SDL_SetRenderDrawColor(renderer,color_01.r,color_01.g,color_01.b,color_01.a);
     }
-    if(graphiclineS[bitcountS] == 0 && graphicline2S[bitcountS] == 1)
+    if(nBit.testBit(graphicLiness, bitcountS) == 0 && nBit.testBit(graphicLiness2, bitcountS) == 1)
     {
         SDL_SetRenderDrawColor(renderer,color_02.r,color_02.g,color_02.b,color_02.a);
     }
-    if(graphiclineS[bitcountS] == 1 && graphicline2S[bitcountS] == 1)
+    if(nBit.testBit(graphicLiness, bitcountS) == 1 && nBit.testBit(graphicLiness2, bitcountS) == 1)
     {
         SDL_SetRenderDrawColor(renderer,color_03.r,color_03.g,color_03.b,color_03.a);
     }
-    sprResult = (graphicline2S[bitcountS] * 2) + graphiclineS[bitcountS];
+    sprResult = (nBit.testBit(graphicLiness2, bitcountS) * 2) + nBit.testBit(graphicLiness, bitcountS);
 }
 uint32_t curPixx;
 uint32_t curPixy;
@@ -368,12 +377,15 @@ int renderPixS()
 }
 bool have16;
 bool dontTwi;
+
 int renderSprite()
 {
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            //graphiclineS = NESOB.PPUmemory[spritePatIndex];
+            //graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -411,8 +423,8 @@ int renderHFLIPSprite()
         xpixS += 7;
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -450,8 +462,8 @@ int renderVFLIPSprite()
         spritePatIndex += 7;
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -478,8 +490,8 @@ int renderVSprite16()
 {
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -518,8 +530,8 @@ int renderHVFLIPSprite()
         spritePatIndex += 7;
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -550,8 +562,8 @@ int renderHVFLIPSprite16()
         xpixS += 7;
         while(ypixS != help2)
         {
-            graphiclineS = NESOB.PPUmemory[spritePatIndex];
-            graphicline2S = NESOB.PPUmemory[spritePatIndex + 8];
+            graphicLiness = NESOB.PPUmemory[spritePatIndex];
+            graphicLiness2 = NESOB.PPUmemory[spritePatIndex + 8];
 
             while(xpixS != help1)
             {
@@ -722,18 +734,17 @@ int handleSprites()
     sprite0 = false;
     currentSprite = 0xFC;
     spriteYpos = OAMmem[0xFC];
-    tempBitBuffer2 = OAMmem[0xFD];
     if(spriteSize == 1)
     {
-        tempBitBuffer2[0] = 0;
+        OAMmem[0xFD] = nBit.resetBit(OAMmem[0xFD], 0);
     }
-    spritePatIndex = tempBitBuffer2.to_ulong() << 4;
-    tempBitBuffer = OAMmem[0xFD];
+    spritePatIndex = OAMmem[0xFD] << 4;
+    //tempBitBuffer = OAMmem[0xFD];
     if(sprite1000 == 1 && spriteSize == 0) // If the bank 1000 bit is set in sprite, use 0x1000 sprites instead.
     {
         spritePatIndex += 0x1000;
     }
-    if(tempBitBuffer[0] == 1 && spriteSize == 1)
+    if((OAMmem[0xFD] & 0x1) == 1 && spriteSize == 1)
     {
         spritePatIndex += 0x1000;
     }
@@ -1156,15 +1167,19 @@ int handleGraphicsBASICSCAN()
     tilecount = tilecount + bgpattable * 0x1000;
         while(Xcounter != 0)
         {
-                graphicline = NESOB.PPUmemory[tilecount];
-                graphicline2 = NESOB.PPUmemory[tilecount + 8];
+                //graphicline = NESOB.PPUmemory[tilecount];
+                //graphicline2 = NESOB.PPUmemory[tilecount + 8];
                 if(Xcounter % 2 == 0)
                 {
                     chooseRenderColorREWRITE();
                 }
                 while(xpixtile2 != 8)
                 {
-                    palResult = palBlolookup[(graphicline2[bitcount] * 2) + graphicline[bitcount]];
+                    //palResult = palBlolookup[(graphicline2[bitcount] * 2) + graphicline[bitcount]];
+                    palResult = palBlolookup[(nBit.testBit(NESOB.PPUmemory[tilecount + 8],
+                                                           bitcount) * 2) +
+                                             (nBit.testBit(NESOB.PPUmemory[tilecount],
+                                                           bitcount)    )];
                     xS9bit = xpix - scrollx;
                     xS9bit = xS9bit & 511;
                     curPixx = xS9bit;

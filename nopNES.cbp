@@ -12,10 +12,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-Wredundant-decls" />
 					<Add option="-Wunreachable-code" />
-					<Add option="-g" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -79,6 +80,8 @@
 		<Unit filename="include.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="mappers.hpp" />
+		<Unit filename="nbit.cpp" />
+		<Unit filename="nbit.hpp" />
 		<Unit filename="sound.hpp" />
 		<Extensions />
 	</Project>

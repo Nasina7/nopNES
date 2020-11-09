@@ -224,34 +224,6 @@ int handleControlsr()
             handleCorruptorKey();
         break;
 
-        case SDLK_7:
-            Mix_Pause(0);
-            bit4 = sq1enable;
-            bit4.flip(0);
-            sq1enable = bit4.to_ulong();
-        break;
-
-        case SDLK_8:
-            Mix_Pause(1);
-            bit4 = sq2enable;
-            bit4.flip(0);
-            sq2enable = bit4.to_ulong();
-        break;
-
-        case SDLK_9:
-            Mix_Pause(2);
-            bit4 = trienable;
-            bit4.flip(0);
-            trienable = bit4.to_ulong();
-        break;
-
-        case SDLK_0:
-            Mix_Pause(3);
-            bit4 = noienable;
-            bit4.flip(0);
-            noienable = bit4.to_ulong();
-        break;
-
         case SDLK_1:
             resN = true;
             noEnter = false;
@@ -469,32 +441,33 @@ int handleControls()
 bool SDLinput;
 int handleSDLcontrol()
 {
-    while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
-        {
-            if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
-            {
-                NESOB.closeProgram = true;
-            }
-            if (SDL_EVENT_HANDLING.type == SDL_KEYDOWN) // If a key is being pressed, handle controls.
-            {   // Handle Controls
-                handleControls();
-            }
-            if (SDL_EVENT_HANDLING.type == SDL_KEYUP)
-            {
-                handleControlsr();
-            }
-        }
-    if(aPress == true)
+    hidScanInput();
+    uint64_t kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+    uint64_t kUp = hidKeysUp(CONTROLLER_P1_AUTO);
+    uint64_t kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
+    if(kDown & KEY_X)
     {
-        //rewindActive = true;
-        //handleRewind();
-        //displayMessagebox("Rewinding...",2);
+        NESOB.closeProgram = true;
     }
-    if(aPress == false)
+    if(kDown & KEY_A)
     {
-        rewind2 = false;
-        rewindActive = false;
-        isFirstAPress = 0;
+        NESOB.sp -= 3;
+        NESOB.pflag = NESOB.pflag | 0x04;
+        NESOB.memory[0x4015] = 0;
+        NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC];
+    }
+
+    controlBuffer[0] = ((kHeld & KEY_B));
+    controlBuffer[1] = ((kHeld & KEY_Y));
+    controlBuffer[2] = ((kHeld & KEY_MINUS));
+    controlBuffer[3] = ((kHeld & KEY_PLUS));
+    controlBuffer[4] = ((kHeld & KEY_DUP));
+    controlBuffer[5] = ((kHeld & KEY_DDOWN));
+    controlBuffer[6] = ((kHeld & KEY_DLEFT));
+    controlBuffer[7] = ((kHeld & KEY_DRIGHT));
+    while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
+    {
+
     }
     return 0;
 }

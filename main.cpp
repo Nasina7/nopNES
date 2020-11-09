@@ -7,11 +7,11 @@ float windowH2;
 float windowW2;
 int main()
 {
-    //test
     rendererChoose = true;
     throttleMode = true;
     enableSound = true;
     srand(time(NULL));
+    //consoleInit(NULL);
     if( SDL_Init( SDL_INIT_EVERYTHING ) < 0)
     {
         printf("SDL2 was Unable to Initialize!");
@@ -22,8 +22,17 @@ int main()
         printf("Mix_OpenAudio: %s\n",Mix_GetError());
         return 2;
     }
-    nopNESwindow = SDL_CreateWindow("nopNES Beta", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 480, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    for (int i = 0; i < 2; i++)
+    {
+        if(SDL_JoystickOpen(i) == NULL)
+        {
+            SDL_Log("SDL_JoystickOpen: %s\n", SDL_GetError());
+            //SDL_Quit();
+            //return -1;
+        }
+    }
+    nopNESwindow = SDL_CreateWindow("nopNES Beta", 0, 0, 1280, 720, 0);
+    renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
 
     notiText = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,128, 20);
     texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGBA8888,SDL_TEXTUREACCESS_STREAMING,256, 240);
@@ -32,6 +41,14 @@ int main()
     textureScanline28 = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,256, 480);
     texture2400 = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGBA8888,SDL_TEXTUREACCESS_STREAMING,256, 240);
     restartNES:
+    SDL_SetRenderDrawColor(renderer,0x00,0xFF,0x0,0xFF);
+    ERROR = {0,0,1280,720};
+    SDL_RenderFillRect(renderer, &ERROR);
+    SDL_RenderDrawRect(renderer, &ERROR);
+    for(int i = 0; i < 60; i++)
+    {
+        SDL_RenderPresent(renderer);
+    }
     if(beginning() == false)
     {
         printf("ERROR!\n");
@@ -45,17 +62,9 @@ int main()
     pale = fopen("pal.pal", "rb");
     fread(pallete,192,1,pale);
     fclose(pale);
-    fpsBenchmark();
+    //fpsBenchmark();
     NESOB.opcode = NESOB.memory[NESOB.pc];
-    #ifdef __linux__
-    FILE* save = fopen("save.sav", "r+");
-    if(save != NULL)
-    {
-        fread(NESOB.memory + 0x6000,sizeof(uint8_t),0x2000,save);
-    }
-    fclose(save);
-    #endif // __linux__
-    displayMessagebox("Emulation Started",120);
+
     while(true) // Begin Loop
     {
         prevScanline = NESOB.scanline;
@@ -67,17 +76,7 @@ int main()
         handleNMI();
         if(prevScanline != NESOB.scanline)
         {
-            if(rendererChoose == true)
-            {
-                if(toggleRender == false)
-                {
-                    handleGraphicsBASICSCAN();
-                }
-                if(toggleRender == true)
-                {
-                    handleGraphicsScan();
-                }
-            }
+            handleGraphicsBASICSCAN();
             handleOther();
         }
         if( prevScanline != NESOB.scanline && NESOB.scanline == 255 )
@@ -99,10 +98,7 @@ int main()
                 exitLoop = true;
                 return 0;
             }
-            if(enableSound == true)
-            {
-                handleSound();
-            }
+            handleSound();
             FILE* save = fopen("save.sav", "w+");
             fwrite(NESOB.memory + 0x6000,sizeof(uint8_t),0x2000,save);
             fclose(save);

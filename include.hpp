@@ -1,23 +1,15 @@
 #include <iostream>
 #include <string>
 #include <bitset>
-#ifdef __linux__
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#endif // __linux__
-#ifdef _WIN32
-#include <SDL.h>
-#include <SDL_ttf.h>
-#endif // _WIN32
-#ifdef __linux__
-    #include <thread>
-#endif // __linux__
-#ifdef _WIN32
-    #include "mingw.thread.h"
-#endif // _WIN32
 #include <unordered_map>
 #include <time.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
+//#include <thread>
+#include <switch.h>
+#include "nbit.hpp"
+//#include <SDL_ttf.h>
+nBitClass nBit;
 bool rewindActive;
 bool enableRewind;
 bool aPress;
@@ -154,23 +146,26 @@ int printRegs()
 }
 void handleFlags7(uint8_t value, uint8_t prevValue)
 {
-    NESOB.Pbitbuffer = NESOB.pflag;
+    //NESOB.Pbitbuffer = NESOB.pflag;
     //NESOB.Xbitbuffer = value;
-    NESOB.Pbitbuffer[7] = value >> 7;
+    NESOB.pflag = nBit.setBitToVal(NESOB.pflag, value >> 7, 7);
+    //NESOB.Pbitbuffer[7] = value >> 7;
     //NESOB.Pbitbuffer[7] = NESOB.Xbitbuffer[7];
-    NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
 }
 void handleFlags1(uint8_t value, uint8_t prevValue)
 {
-    NESOB.Pbitbuffer = NESOB.pflag;
-    NESOB.Pbitbuffer[1] = (value == 0);
-    NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    //NESOB.Pbitbuffer = NESOB.pflag;
+    //NESOB.Pbitbuffer[1] = (value == 0);
+    //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    NESOB.pflag = nBit.setBitToVal(NESOB.pflag, value == 0, 1);
 }
 void handleFlags0(uint8_t prevValue, uint8_t subValue)
 {
-    NESOB.Pbitbuffer = NESOB.pflag;
-    NESOB.Pbitbuffer[0] = (prevValue >= subValue);
-    NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    //NESOB.Pbitbuffer = NESOB.pflag;
+    //NESOB.Pbitbuffer[0] = (prevValue >= subValue);
+    //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    NESOB.pflag = nBit.setBitToVal(NESOB.pflag,prevValue >= subValue, 0);
 }
 void handleFlags(uint8_t value, uint8_t prevValue)
 {
@@ -347,6 +342,7 @@ int CHRbankSwitch4khigh(uint8_t value)
     fclose(rom);
     return true;
 }
+uint8_t replaceB2;
 void handleScanlineStuff()
 {
         scanlineTimer = NESOB.cycles % cycleModulo; // 134
@@ -404,8 +400,8 @@ int doBenchmark()
 }
 void fpsBenchmark()
 {
-        std::thread benchmark(doBenchmark);
-        benchmark.detach();
+        //std::thread benchmark(doBenchmark);
+        //benchmark.detach();
 }
 
 std::bitset<2> controlerpoll;

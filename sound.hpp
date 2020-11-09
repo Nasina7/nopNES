@@ -6,6 +6,8 @@
 #include <SDL_mixer.h>
 #endif // _WIN32
 // TODO
+#include <SDL2/SDL_mixer.h>
+
 Uint8 sq1raw[96000];
 Uint8 sq2raw[96000];
 Uint8 triraw[96000];
@@ -41,6 +43,7 @@ uint8_t sq1env;
 uint8_t sq1env2;
 uint8_t sq1envp;
 uint8_t sq1env2p;
+
 int generateSamplesq1()
 {
     finalPeriods = finalPeriods / divide;
@@ -657,3 +660,4 @@ int handleSoundTimers()
     }
     return 0;
 }
+
