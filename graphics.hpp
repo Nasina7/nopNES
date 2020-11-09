@@ -319,6 +319,7 @@ void chooseRenderColorSprite(uint8_t spritePal)
 uint32_t curPixx;
 uint32_t curPixy;
 uint32_t pixels[512 * 240];
+uint32_t pixelsOptimize[240][512];
 uint32_t pixelsFixTest[240][512];
 uint32_t pixelsScanF[240][256];
 uint32_t pixelsRe[240][512];
@@ -1098,11 +1099,15 @@ uint16_t lookupNametable[4] = {0x2000,0x2400,0x2800,0x2C00};
 uint16_t invertedlook1[4] = {0x2400,0x2000,0x2400,0x2000};
 uint16_t invertedlook2[4] = {0x2800,0x2800,0x2000,0x2000};
 uint8_t palResult4;
+uint16_t modScan;
 void testThread()
 {
     SDL_UpdateTexture(textureScanline, NULL, pixels, blitsu);
     SDL_RenderCopy(renderer, textureScanline, NULL, &mainScreen);
 }
+uint8_t ppuRenderC;
+uint16_t testFixPix;
+uint16_t loopTemp;
 int handleGraphicsBASICSCAN()
 {
     if(maskProperties[3] == 0)
@@ -1122,41 +1127,52 @@ int handleGraphicsBASICSCAN()
         goto doneRenderFrame;
     }
     ppurendercount = 2;
-    tempBitBuffer16 = Loopy;
-    nametableuse = (tempBitBuffer16[11] * 2) + tempBitBuffer16[10];
-    tempBitBuffer = Loopy;
-    tempBitBuffer[7] = 0;
-    tempBitBuffer[6] = 0;
-    tempBitBuffer[5] = 0;
-    scrollx = tempBitBuffer.to_ulong();
-    scrollx = scrollx * 8;
+    loopTemp = Loopy;
+    nametableuse = (nBit.testBit(loopTemp, 11) << 1) + nBit.testBit(loopTemp, 10);
+    loopTemp = Loopy;
+    loopTemp = nBit.resetBit(loopTemp, 7);
+    loopTemp = nBit.resetBit(loopTemp, 6);
+    loopTemp = nBit.resetBit(loopTemp, 5);
+    scrollx = loopTemp;
+    scrollx = scrollx << 3;
     scrollx += fineXscroll;
     //printf("scrollx: %i\n",scrollx);
-    tempBitBuffer = Loopy >> 5;
-    tempBitBuffer[7] = 0;
-    tempBitBuffer[6] = 0;
-    tempBitBuffer[5] = 0;
-    scrolly = tempBitBuffer.to_ulong();
-    scrolly = scrolly * 8;
-    tempBitBuffer = Loopy >> 12;
-    tempBitBuffer[7] = 0;
-    tempBitBuffer[6] = 0;
-    tempBitBuffer[5] = 0;
-    tempBitBuffer[4] = 0;
-    tempBitBuffer[3] = 0;
-    fineYscroll = tempBitBuffer.to_ulong();
+    loopTemp = Loopy >> 5;
+    loopTemp = nBit.resetBit(loopTemp, 7);
+    loopTemp = nBit.resetBit(loopTemp, 6);
+    loopTemp = nBit.resetBit(loopTemp, 5);
+    scrolly = loopTemp;
+    scrolly = scrolly << 3;
+    loopTemp = Loopy >> 12;
+    loopTemp = nBit.resetBit(loopTemp, 7);
+    loopTemp = nBit.resetBit(loopTemp, 6);
+    loopTemp = nBit.resetBit(loopTemp, 5);
+    loopTemp = nBit.resetBit(loopTemp, 4);
+    loopTemp = nBit.resetBit(loopTemp, 3);
+    fineYscroll = loopTemp;
     scrolly += fineYscroll;
     //printf("Scrolly: %X\n",scrolly);
     nametableAddr2 = nametableLookup[nametableuse];
     //printf("Nametable1: 0x%X\n",nametableAddr2);
-    while(ppurendercount != 0)
+    modScan = NESOB.scanline & 7;
+    switch(scrollx)
+    {
+        case 0:
+            ppuRenderC = 1;
+        break;
+
+        default:
+            ppuRenderC = 0;
+        break;
+    }
+    while(ppurendercount != ppuRenderC)
     {
     Xcounter = 32;
     bitcount = 7;
-    tiledatalocation1 = nametableAddr2 + ((NESOB.scanline) / 8) * 32;
+    tiledatalocation1 = nametableAddr2 + ((NESOB.scanline) >> 3) * 32;
     tilelocation = NESOB.PPUmemory[tiledatalocation1];
     tilecount = tilelocation << 4;
-    tilecount += NESOB.scanline % 8;
+    tilecount += modScan;
     xpix = 0;
     ypix = NESOB.scanline;
     xpixtile = 0;
@@ -1164,7 +1180,7 @@ int handleGraphicsBASICSCAN()
     xpixtile2 = 0;
     ypixtile2 = 0;
     //printf("ys: %i\n",scrolly);
-    tilecount = tilecount + bgpattable * 0x1000;
+    tilecount += (bgpattable << 0xC);
         while(Xcounter != 0)
         {
                 //graphicline = NESOB.PPUmemory[tilecount];
@@ -1175,91 +1191,106 @@ int handleGraphicsBASICSCAN()
                 }
                 while(xpixtile2 != 8)
                 {
+
                     //palResult = palBlolookup[(graphicline2[bitcount] * 2) + graphicline[bitcount]];
                     palResult = palBlolookup[(nBit.testBit(NESOB.PPUmemory[tilecount + 8],
-                                                           bitcount) * 2) +
+                                                           bitcount) << 1) +
                                              (nBit.testBit(NESOB.PPUmemory[tilecount],
                                                            bitcount)    )];
                     xS9bit = xpix - scrollx;
                     xS9bit = xS9bit & 511;
                     curPixx = xS9bit;
-                    if(MMC3mirror == false)
-                    {
-                        if(ppurendercount == 1)
-                        {
-                            curPixx = curPixx + 256;
-                            xS9bit += 256;
-                        }
-                        curPixx = curPixx & 511;
-                        xS9bit = xS9bit & 511;
-                        if(NESOB.scanline < 240)
-                        {
-                            yscro8 = NESOB.scanline - scrolly;
-                            if(yscro8 >= 240 - (scrolly - 16))
-                            {
-                                yscro8 -= 16;
-                            }
-                            curPixx += yscro8 * 512;
-                        }
-                        palResult4 = palResult * 4;
-                        pixels[curPixx] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
-                        if(xS9bit <= 7 && maskProperties[1] == false)
-                        {
-                            pixels[curPixx] = pal[0] << 16 | pal[1] << 8 | pal[2];
-                        }
-                    }
 
-                    if(MMC3mirror == true)
+                    switch(MMC3mirror)
                     {
-                        if(NESOB.scanline < 240)
-                        {
-                            yscro16 = NESOB.scanline;
-                            yscro16 -= scrolly;
-                            if(yscro16 > 480)
-                            {
-                                yscro16 -= 65055;
-                            }
-                            //curPixx = yscro16 * 256; // Sets Current Y line
+                        case false:
                             if(ppurendercount == 1)
                             {
-                                yscro16 += 240;
+                                curPixx += 256;
+                                xS9bit = curPixx;
                             }
-                            if(yscro16 > 480)
+
+                            curPixx = curPixx & 511;
+                            xS9bit = xS9bit & 511;
+
+                            if(xS9bit > 255)
                             {
-                                yscro16 -= 480;
+                                xpix -= xpixtile2;
+                                xpix += 8;
+                                goto dontRenderTile; // Render Optimization
                             }
-                            curPixx = yscro16 * 256; // Sets Current Y line
-                        }
-                        dummy8 = xpix;
-                        dummy8 -= scrollx;
-                        curPixx += dummy8;
-                        palResult4 = palResult * 4;
-                        pixelsScan28[curPixx] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
-                        if(dummy8 <= 7 && maskProperties[1] == false)
-                        {
-                            pixelsScan28[curPixx] = pal[0] << 16 | pal[1] << 8 | pal[2];
-                        }
+
+                            //if(NESOB.scanline < 240)
+                            //{
+                                yscro8 = NESOB.scanline - scrolly;
+                                if(yscro8 >= 240 - (scrolly - 16))
+                                {
+                                    yscro8 -= 16;
+                                }
+                                curPixx += yscro8 * 512;
+                            //}
+                            palResult4 = palResult << 2;
+                            pixels[curPixx] = pal[palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
+                            //pixelsOptimize[yscro8][xS9bit] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
+                            if(xS9bit <= 7 && maskProperties[1] == false)
+                            {
+                                pixels[curPixx] = pal[0] << 16 | pal[1] << 8 | pal[2];
+                                //pixelsOptimize[yscro8][xS9bit] = pal[0] << 16 | pal[1] << 8 | pal[2];
+                            }
+                        break;
+
+                        case true:
+                            if(NESOB.scanline < 240)
+                            {
+                                yscro16 = NESOB.scanline;
+                                yscro16 -= scrolly;
+                                if(yscro16 > 480)
+                                {
+                                    yscro16 -= 65055;
+                                }
+                                //curPixx = yscro16 * 256; // Sets Current Y line
+                                if(ppurendercount == 1)
+                                {
+                                    yscro16 += 240;
+                                }
+                                if(yscro16 > 480)
+                                {
+                                    yscro16 -= 480;
+                                }
+                                curPixx = yscro16 * 256; // Sets Current Y line
+                            }
+                            dummy8 = xpix;
+                            dummy8 -= scrollx;
+                            curPixx += dummy8;
+                            palResult4 = palResult << 2;
+                            pixelsScan28[curPixx] = pal[0 + palResult4] << 16 | pal[1 + palResult4] << 8 | pal[2 + palResult4];
+                            if(dummy8 <= 7 && maskProperties[1] == false)
+                            {
+                                pixelsScan28[curPixx] = pal[0] << 16 | pal[1] << 8 | pal[2];
+                            }
+                        break;
                     }
-                    xpix++;
-                    bitcount--;
-                    xpixtile2++;
+                    dontRenderPix:
+                    ++xpix;
+                    --bitcount;
+                    ++xpixtile2;
                 }
-            xpixtile++;
-            Xcounter--;
+            dontRenderTile:
+            ++xpixtile;
+            --Xcounter;
             xpixtile2 = 0;
-            tiledatalocation1++;
+            ++tiledatalocation1;
             bitcount = 7;
             tilelocation = NESOB.PPUmemory[tiledatalocation1];
-            tilecount = ((tilelocation << 4) + (NESOB.scanline % 8));
+            tilecount = ((tilelocation << 4) + (modScan));
             //if(bgpattable == true)
            // {
             //    tilecount += 0x1000;
             //}
             tilecount += bgpattable * 0x1000;
-
         }
         currentnametable = 0;
-        ppurendercount -= 1;
+        --ppurendercount;
         if(MMC3mirror == false)
         {
             nametableAddr2 = invertedlook1[nametableuse];

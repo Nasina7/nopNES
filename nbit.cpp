@@ -34,6 +34,20 @@ bool nBitClass::testBit(unsigned long value, unsigned char bit)
 }
 unsigned long nBitClass::shiftBit(unsigned long value, unsigned char shiftAmount, bool direction)
 {
+    if(shiftAmount < 32)
+    {
+       switch(direction)
+        {
+            case false: // Logical Shift Left
+                value = value << shiftAmount;
+            break;
+
+            case true: // Logical Shift Right
+                value = value >> shiftAmount;
+            break;
+        }
+        return value;
+    }
     while(shiftAmount != 0)
     {
         switch(direction)
@@ -86,3 +100,4 @@ unsigned long nBitClass::aShiftBit(unsigned long value, unsigned char bit)
     }
     return value;
 }
+

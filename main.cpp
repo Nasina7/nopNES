@@ -62,7 +62,7 @@ int main()
     pale = fopen("pal.pal", "rb");
     fread(pallete,192,1,pale);
     fclose(pale);
-    //fpsBenchmark();
+    fpsBenchmark();
     NESOB.opcode = NESOB.memory[NESOB.pc];
 
     while(true) // Begin Loop
@@ -106,7 +106,7 @@ int main()
             SDL_GetWindowSize(nopNESwindow, &windowW, &windowH);
             windowW2 = windowW;
             windowH2 = windowH;
-            SDL_RenderSetScale(renderer, windowW2 / 256, windowH2 / 240);
+            //SDL_RenderSetScale(renderer, windowW2 / 256, windowH2 / 240);
 
             if(graphicThread == false && rendererChoose == false)
             {

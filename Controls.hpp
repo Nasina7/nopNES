@@ -441,6 +441,7 @@ int handleControls()
 bool SDLinput;
 int handleSDLcontrol()
 {
+    /*
     hidScanInput();
     uint64_t kDown = hidKeysDown(CONTROLLER_P1_AUTO);
     uint64_t kUp = hidKeysUp(CONTROLLER_P1_AUTO);
@@ -465,9 +466,13 @@ int handleSDLcontrol()
     controlBuffer[5] = ((kHeld & KEY_DDOWN));
     controlBuffer[6] = ((kHeld & KEY_DLEFT));
     controlBuffer[7] = ((kHeld & KEY_DRIGHT));
+    */
     while( SDL_PollEvent( &SDL_EVENT_HANDLING)) // While Event to handle Random Stuff
     {
-
+        if (SDL_EVENT_HANDLING.type == SDL_QUIT) // If the SDL Window is Closed, close the program.
+        {
+            NESOB.closeProgram = true;
+        }
     }
     return 0;
 }

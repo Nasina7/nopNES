@@ -16,4 +16,5 @@ class nBitClass
     private:
         bool backupBit;
         bool signValue;
+        unsigned long testBitLookupTable[32];
 };

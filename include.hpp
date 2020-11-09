@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-//#include <thread>
-#include <switch.h>
+#include <thread>
+//#include <switch.h>
 #include "nbit.hpp"
 //#include <SDL_ttf.h>
 nBitClass nBit;
@@ -400,8 +400,8 @@ int doBenchmark()
 }
 void fpsBenchmark()
 {
-        //std::thread benchmark(doBenchmark);
-        //benchmark.detach();
+        std::thread benchmark(doBenchmark);
+        benchmark.detach();
 }
 
 std::bitset<2> controlerpoll;

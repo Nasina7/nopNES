@@ -1,11 +1,11 @@
 # depslib dependency file v1.0
-1604885216 source:/home/zach/codeblocks/nopNES/main.cpp
+1604943379 source:/home/zach/codeblocks/nopNES/main.cpp
 	"cpu.hpp"
 
 1604884197 /home/zach/codeblocks/nopNES/cpu.hpp
 	"Controls.hpp"
 
-1604885186 /home/zach/codeblocks/nopNES/include.hpp
+1604934897 /home/zach/codeblocks/nopNES/include.hpp
 	<iostream>
 	<string>
 	<bitset>
@@ -17,10 +17,10 @@
 	"nbit.hpp"
 	<unistd.h>
 
-1604881635 /home/zach/codeblocks/nopNES/Controls.hpp
+1604935739 /home/zach/codeblocks/nopNES/Controls.hpp
 	"graphics.hpp"
 
-1604886334 /home/zach/codeblocks/nopNES/graphics.hpp
+1604943409 /home/zach/codeblocks/nopNES/graphics.hpp
 	"mappers.hpp"
 
 1522244266 /usr/include/wx-3.0/wx/string.h
@@ -2302,9 +2302,9 @@
 	"begin_code.h"
 	"close_code.h"
 
-1604678619 /home/zach/codeblocks/nopNES/nbit.hpp
+1604937771 /home/zach/codeblocks/nopNES/nbit.hpp
 
-1604678619 source:/home/zach/codeblocks/nopNES/nbit.cpp
+1604941963 source:/home/zach/codeblocks/nopNES/nbit.cpp
 	"nbit.hpp"
 	<stdio.h>
 
