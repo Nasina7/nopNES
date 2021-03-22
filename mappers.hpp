@@ -403,9 +403,9 @@ bool beginning()
         SDL_RenderPresent(renderer);
     }
 
-
-
+    strcpy(NESOB.filename, NESOB.filename);
     //cin>>NESOB.filename;
+//    NESOB.filename = "mario.nes";
     SDL_RenderSetScale(renderer,2,2);
     FILE* headerf = fopen(NESOB.filename, "rb");
     if(headerf == NULL)

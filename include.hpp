@@ -12,9 +12,9 @@
 #ifdef __linux__
     #include <thread>
 #endif // __linux__
-#ifdef _WIN32
-    #include "mingw.thread.h"
-#endif // _WIN32
+//#ifdef _WIN32
+//    #include "mingw.thread.h"
+//#endif // _WIN32
 #include <unordered_map>
 #include <time.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@ bool rewindActive;
 bool enableRewind;
 bool aPress;
 uint64_t opcodeTest[0x100];
-int cycleModulo = 113; // 134 113 90
+int cycleModulo = 341; // 134 113 90
 const char currentVersion[4] = "0.1";
 bool breakpoint;
 bool dummybool;
@@ -98,6 +98,7 @@ class NESCPU
         uint8_t higherPC;
         uint16_t scanline;
 };
+bool vblank2002;
 uint8_t a;
 uint8_t b;
 int16_t diff;
@@ -135,6 +136,10 @@ SDL_Renderer* renderer;
 SDL_Renderer* rendererDEBUG;
 SDL_Event SDL_EVENT_HANDLING;
 int option2;
+bool swapRender;
+uint16_t previousPC;
+
+uint16_t beforePCb;
 using namespace std;
 int printRegs()
 {
@@ -148,29 +153,63 @@ int printRegs()
         std::cout<<"pflag: "<<NESOB.Pbitbuffer<<std::endl;
     #endif
     printf("PC: 0x%X\n",NESOB.pc);
+    printf("Previous PC: 0x%X\n",previousPC);
     printf("Cycles: %i\n",NESOB.cycles);
+    printf("Cycles MOD: %i\n",NESOB.cycles % cycleModulo);
     printf("Scanline: %i\n",NESOB.scanline);
     return true;
 }
 void handleFlags7(uint8_t value, uint8_t prevValue)
 {
+    value = value & 0x80;
+    if(value == 0x00)
+    {
+        NESOB.pflag = NESOB.pflag & 0x7F;
+    }
+    if(value != 0x00)
+    {
+        NESOB.pflag = NESOB.pflag | 0x80;
+    }
+    //NESOB.pflag = NESOB.pflag | value;
+    /*
     NESOB.Pbitbuffer = NESOB.pflag;
     //NESOB.Xbitbuffer = value;
     NESOB.Pbitbuffer[7] = value >> 7;
     //NESOB.Pbitbuffer[7] = NESOB.Xbitbuffer[7];
     NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    */
+
 }
 void handleFlags1(uint8_t value, uint8_t prevValue)
 {
-    NESOB.Pbitbuffer = NESOB.pflag;
-    NESOB.Pbitbuffer[1] = (value == 0);
-    NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    if(value == 0)
+    {
+        NESOB.pflag = NESOB.pflag | 0x2;
+    }
+    if(value != 0)
+    {
+        NESOB.pflag = NESOB.pflag & 0xFD;
+    }
+
+
+    //NESOB.Pbitbuffer = NESOB.pflag;
+    //NESOB.Pbitbuffer[1] = (value == 0);
+    //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
 }
 void handleFlags0(uint8_t prevValue, uint8_t subValue)
 {
-    NESOB.Pbitbuffer = NESOB.pflag;
-    NESOB.Pbitbuffer[0] = (prevValue >= subValue);
-    NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
+    if(prevValue >= subValue)
+    {
+        NESOB.pflag = NESOB.pflag | 0x1;
+    }
+    if(prevValue < subValue)
+    {
+        NESOB.pflag = NESOB.pflag & 0xFE;
+    }
+
+    //NESOB.Pbitbuffer = NESOB.pflag;
+    //NESOB.Pbitbuffer[0] = (prevValue >= subValue);
+    //NESOB.pflag = NESOB.Pbitbuffer.to_ulong();
 }
 void handleFlags(uint8_t value, uint8_t prevValue)
 {
@@ -201,8 +240,8 @@ uint64_t currentFpsonStart;
 uint64_t currentFpsonEnd;
 #include <unistd.h>
 bool NMIthrottle;
-uint8_t scanlineTimer;
-uint8_t prevScanlineTimer;
+uint16_t scanlineTimer;
+uint16_t prevScanlineTimer;
 char options;
 bool renderThrottle;
 bool NMIrequest;
@@ -360,9 +399,10 @@ void handleScanlineStuff()
                 //printf("test\n");
                 NESOB.Pbitbuffer[7] = 1;
                 NESOB.memory[0x2002] = NESOB.Pbitbuffer.to_ulong();
+                vblank2002 = true;
             }
             NESOB.Xbitbuffer = NESOB.memory[0x2000];
-            if(NESOB.scanline >= 241 && NMIthrottle == false && NESOB.Pbitbuffer[7] == 1 && NESOB.Xbitbuffer[7] == 1)
+            if(NESOB.scanline >= 241 && NMIthrottle == false && vblank2002 == true && NESOB.Xbitbuffer[7] == 1)
             {
                 NMIthrottle = true;
                 NMIrequest = true;
@@ -371,6 +411,7 @@ void handleScanlineStuff()
             {
                 read2002vb = false;
                 NMIthrottle = false;
+                vblank2002 = false;
                 //NMIrequest = false;
                 NESOB.Pbitbuffer = NESOB.memory[0x2002];
                 NESOB.Pbitbuffer[7] = 0;
@@ -402,12 +443,13 @@ int doBenchmark()
     doBenchmark();
     return 0;
 }
+#ifdef __linux__
 void fpsBenchmark()
 {
         std::thread benchmark(doBenchmark);
         benchmark.detach();
 }
-
+#endif
 std::bitset<2> controlerpoll;
 uint8_t scrollwrite;
 uint8_t scrollx;
@@ -415,6 +457,7 @@ uint8_t scrolly;
 uint8_t scrolly2;
 uint8_t locationMod8;
 uint16_t location8;
+bool crossPage;
 int indirectYget()
 {
     NESOB.prevValue = NESOB.a;
@@ -428,7 +471,16 @@ int indirectYget()
         NESOB.tempValue2 = NESOB.memory[NESOB.tempValue16];
     }
     NESOB.tempValue162 = NESOB.tempValue2 << 8 | NESOB.tempValue;
+    if((NESOB.tempValue162 & 0xFF00) == ((NESOB.tempValue162 + NESOB.y) & 0xFF00))
+    {
+        crossPage = false;
+    }
+    if((NESOB.tempValue162 & 0xFF00) != ((NESOB.tempValue162 + NESOB.y) & 0xFF00))
+    {
+        crossPage = true;
+    }
     NESOB.tempValue162 = NESOB.tempValue162 + NESOB.y;
+
     return NESOB.tempValue162;
 }
 bool graphicThread;
@@ -461,7 +513,7 @@ bool beginIRQcounter;
 void triggerMMC3irq()
 {
         tempBitBuffer = NESOB.pflag;
-        tempBitBuffer[2] = 1;
+        //tempBitBuffer[2] = 1;
         tempBitBuffer[5] = 1;
         tempBitBuffer[4] = 0;
         NESOB.pflag = tempBitBuffer.to_ulong();
@@ -476,6 +528,7 @@ void triggerMMC3irq()
         NESOB.tempValue16--;
         NESOB.sp -= 3;
         NESOB.pc = NESOB.memory[0xFFFF] << 8 | NESOB.memory[0xFFFE];
+        //irqEnable = false;
         //printf("%X\n",NESOB.pc);
 }
 bool storeIRQ;
@@ -483,6 +536,68 @@ uint8_t irqCount;
 uint8_t itest;
 bool irqThrottle;
 bool drawT;
+bool irqDisableReenable;
+bool a12toggle = false;
+bool irqRequest;
+int handleMMC3irqREDO()
+{
+
+        if(mapper == 4) // MMC3 IRQ timer
+        {
+            tempBitBuffer = NESOB.pflag;
+            if(irqMMC3reloadstore == true && NESOB.scanline != prevScanline)
+            {
+                irqMMC3reloadstore = false;
+                irqCount = irqCounterReloadMMC3;
+            }
+            if(irqCount == 0xFF && NESOB.scanline != prevScanline)
+            {
+                irqCount = irqCounterReloadMMC3;
+            }
+            if(NESOB.scanline != prevScanline && NESOB.scanline < 240)
+            {
+                irqCount--;
+            }
+            //irqCount--;
+            if(irqCount == 0 && irqEnable == true && tempBitBuffer[2] == 0 && NESOB.scanline < 240)
+            {
+                irqRequest = false;
+                triggerMMC3irq();
+                NESOB.cycles += 21;
+                irqCount = 0xFF;
+                drawT = true;
+                //breakpoint = true;
+                //breakpoint = true;
+                //printf("IRQ!\n");
+                //printf("Scanline: %i\n",NESOB.scanline);
+                //printf("MMC3IRQ!\n");
+
+                //printf("JUMP TO: 0x%X%X\n",NESOB.memory[0xFFFF],NESOB.memory[0xFFFE]);
+            }
+            if(irqRequest == true && irqEnable == true && NESOB.scanline != prevScanline && tempBitBuffer[2] == 0)
+            {
+                //irqEnable = false;
+                //irqRequest = false;
+                //triggerMMC3irq();
+                //NESOB.cycles += 21;
+                //irqCount = 0xFF;
+                //drawT = true;
+                //if(MMC3bankselect == 0xB)
+                //{
+               //     breakpoint = true;
+                //}
+                //breakpoint = true;
+                //printf("IRQ!\n");
+               // printf("Scanline: %i\n",NESOB.scanline);
+            }
+            //if(irqCount == 0)
+            //{
+            //    irqCount = irqCounterReloadMMC3;
+            //}
+            //printf("0x%X\n",irqCounterMMC3);
+        }
+    return 0;
+}
 int handleMMC3irq()
 {
     //return 0;
@@ -499,9 +614,10 @@ int handleMMC3irq()
         {
             triggerMMC3irq();
             drawT = true;
-            printf("IRQ!\n");
-            printf("Scanline: %i\n",NESOB.scanline);
-            printf("JUMP TO: 0x%X%X\n",NESOB.memory[0xFFFF],NESOB.memory[0xFFFE]);
+            breakpoint = true;
+            //printf("IRQ!\n");
+            //printf("Scanline: %i\n",NESOB.scanline);
+            //printf("JUMP TO: 0x%X%X\n",NESOB.memory[0xFFFF],NESOB.memory[0xFFFE]);
         }
         //if(irqCount == 0)
         //{
@@ -608,8 +724,16 @@ void handleMMC3(uint16_t location, uint8_t value)
                             }
                             if(MMC3bankbit == 6)
                             {
+                                //breakpoint = true;
+                                //printf("ROMBANKSWITCH: 0x%X\n", MMC3bankselect);
                                 if(MMC3prgbankbit == 0)
                                 {
+                                    //printf("ROMBANKSWITCH2: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
+                                    tempBitBuffer = MMC3bankselect;
+                                    tempBitBuffer[7] = 0;
+                                    tempBitBuffer[6] = 0;
+                                    MMC3bankselect = tempBitBuffer.to_ulong();
+                                    //printf("ROMBANKSWITCH: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
                                     //printf("10x%X\n", value);
                                     //breakpoint = true;
                                     bankSwitchPRG(MMC3bankselect, 0x8000, 0x2000);
@@ -617,23 +741,38 @@ void handleMMC3(uint16_t location, uint8_t value)
                                 }
                                 if(MMC3prgbankbit == 1)
                                 {
+
                                     //printf("20x%X\n", value);
+                                    //printf("ROMBANKSWITCH2: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
                                     tempBitBuffer = MMC3bankselect;
                                     tempBitBuffer[7] = 0;
                                     tempBitBuffer[6] = 0;
                                     MMC3bankselect = tempBitBuffer.to_ulong();
+                                    //printf("ROMBANKSWITCH: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
                                     bankSwitchPRG(MMC3bankselect, 0xC000, 0x2000);
                                     fixSecondLastBankMMC3(0x8000, 0x2000);
                                 }
                             }
                             if(MMC3bankbit == 7)
                             {
+
                                 //printf("0x%X\n", value);
+                                //breakpoint = true;
+                                //printf("ROMBANKSWITCH: 0x%X\n", MMC3bankselect);
+                                //printf("ROMBANKSWITCH2: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
+                                //printf("PRGBANKBIT: 0x%X\n", MMC3prgbankbit);
+                                //printf("CHRBANKBIT: 0x%X\n", MMC3chrconvert);
                                 tempBitBuffer = MMC3bankselect;
                                 tempBitBuffer[7] = 0;
                                 tempBitBuffer[6] = 0;
                                 MMC3bankselect = tempBitBuffer.to_ulong();
+                                //printf("ROMBANKSWITCH: 0x%X at 0x%X\n", MMC3bankselect, NESOB.pc);
                                 bankSwitchPRG(MMC3bankselect, 0xA000, 0x2000);
+                            }
+                            if(MMC3bankselect > 0x3F && MMC3bankbit > 5)
+                            {
+                                //breakpoint = true;
+                                //printf("ROMBANKSWITCH: 0x%X\n", MMC3bankselect);
                             }
                         }
                 break;
@@ -652,19 +791,27 @@ void handleMMC3(uint16_t location, uint8_t value)
                     }
                     if(location % 2 == 1)
                     {
-                        irqMMC3reloadstore = true;
+                        //irqMMC3reloadstore = true;
+                        irqCount = irqCounterReloadMMC3;
+                        //printf("RELOAD REQUESTED!\n");
                     }
                 break;
                 case 0xE000 ... 0xFFFF:
                     if(location % 2 == 0)
                     {
                         irqEnable = false;
-                        irqCounterMMC3 = irqCounterReloadMMC3;
+                        //printf("IRQDISABLE: %i\n", NESOB.scanline);
+                        if(irqRequest == true && (NESOB.pflag & 0x4) == 0)
+                        {
+                            triggerMMC3irq();
+                        }
                     }
                     if(location % 2 == 1)
                     {
+                        //printf("IRQENABLE: %i\n", NESOB.scanline);
                         irqEnable = true;
                     }
+                    //printf("IRQ: 0x%X PC: 0x%X\n", irqEnable, NESOB.pc);
                 break;
             }
 }
@@ -798,6 +945,7 @@ void handlemap52(uint16_t location, uint8_t value)
                 case 0xC000 ... 0xDFFF:
                     if(location % 2 == 0)
                     {
+                        printf("VAL: 0x%X    SCANLINE: %i\n", value, NESOB.scanline);
                         irqCounterReloadMMC3 = value;
                     }
                     if(location % 2 == 1)
@@ -809,6 +957,10 @@ void handlemap52(uint16_t location, uint8_t value)
                     if(location % 2 == 0)
                     {
                         irqEnable = false;
+                        if(irqRequest == true && (NESOB.pflag & 0x4) == 0)
+                        {
+                            triggerMMC3irq();
+                        }
                     }
                     if(location % 2 == 1)
                     {
@@ -838,6 +990,7 @@ void cpyVMEM(uint16_t from, uint16_t to, uint16_t datasize)
 uint8_t chr113;
 uint8_t prg113;
 uint8_t dummy113;
+uint16_t backPC;
 bool handleRomWrite(uint8_t value, uint16_t location)
 {
     switch(mapper)
@@ -847,16 +1000,20 @@ bool handleRomWrite(uint8_t value, uint16_t location)
         break;
 
         case 0x01:
+            //breakpoint = true;
             MMC1help1 = value;
             //MMC3mirror = MMC1help1[1];
             if(value >= 0x80)
             {
                 MMC1counter = 0xFF;
+                //printf("RESET at 0x%X at location 0x%X with value 0x%X\n", location, NESOB.pc, value);
+                break;
                 //printf("RESETCOUNT!\n");
             }
             if(value < 0x80)
             {
                 MMC1counter++;
+                //printf("INC at 0x%X at location 0x%X with value 0x%X\n", location, NESOB.pc, value);
             }
             MMC1help2 = shiftReg;
             MMC1help2[MMC1counter] = MMC1help1[0];
@@ -932,6 +1089,8 @@ bool handleRomWrite(uint8_t value, uint16_t location)
                 {
                     MMC1help1 = shiftReg;
                     MMC1help1[4] = 0;
+                    //printf("MMC!PRGMODE: 0x%X\n",MMC1prgmode);
+                    //printf("awawawawawawa: 0x%X\n",shiftReg);
                     if(MMC1prgmode == 0 || MMC1prgmode == 1)
                     {
                         MMC1help1[0] = 0;
@@ -1395,9 +1554,17 @@ uint8_t fineXscroll;
 uint8_t coarseXscroll;
 uint8_t controllercount;
 bool maskProperties[8];
+
+uint16_t rrr = 135;
+
 int NESmemWrite(uint8_t value, uint16_t location)
 {
     //printf("location: 0x%X\n",location);
+    if(location == 0x0101)
+    {
+        //printf("WRITETO: 0x%X\n", value);
+        //breakpoint = true;
+    }
     switch(location)
     {
 
@@ -1483,7 +1650,19 @@ int NESmemWrite(uint8_t value, uint16_t location)
         case 0x2006:
             if(NESOB.PPUwritecounter == 0)
             {
+                //printf("VALUEWRITE: 0x%X\n", value);
+                a12toggle = ((NESOB.VRAMaddresshigh & 0x10) == 0x10);
                 NESOB.VRAMaddresshigh = value;
+                if(((NESOB.VRAMaddresshigh & 0x10) >> 4) != a12toggle)
+                {
+                    //printf("VALUEWRITE2: 0x%X\n", irqCount);
+                    irqCount = irqCount - 1;
+                    //printf("VALUEWRITE2: 0x%X\n", irqCount);
+                    if(irqCount == 0)
+                    {
+                        //handleMMC3irqREDO();
+                    }
+                }
                 NESOB.PPUwritecounter = 1;
                 //handleMMC3irq();
                 goto done0x2006;
@@ -1716,9 +1895,16 @@ int NESmemWrite(uint8_t value, uint16_t location)
             controllercount = 0x0;
         break;
 
+        case 0x4017:
+            if(value == 0)
+            {
+                //irq4017 = true;
+            }
+        break;
+
         case 0x4100 ... 0x7FFF:
             NESOB.memory[location] = value;
-            handleRomWrite(value, location);
+            //handleRomWrite(value, location);
         break;
 
         case 0x8000 ... 0xFFFF:
@@ -1822,6 +2008,10 @@ uint8_t NESmemRead(uint16_t location)
             location2 += 0x2000;
             printf("Location After: 0x%X\n", location2);
             return NESOB.memory[location2];
+        break;
+
+        case 0x4015:
+            return 0;
         break;
 
         case 0x4016:
@@ -1936,11 +2126,11 @@ uint8_t NESmemRead(uint16_t location)
     if(read2002vb == true)
     {
         read2002vb = false;
-        //tempBitBuffer2 = NESOB.memory[0x2002];
-        //tempBitBuffer = NESOB.memory[0x2002];
-        //tempBitBuffer[7] = 0;
-        //NESOB.memory[0x2002] = tempBitBuffer.to_ulong();
-        //return tempBitBuffer2.to_ulong();
+        tempBitBuffer2 = NESOB.memory[0x2002];
+        tempBitBuffer = NESOB.memory[0x2002];
+        tempBitBuffer[7] = 0;
+        NESOB.memory[0x2002] = tempBitBuffer.to_ulong();
+        return tempBitBuffer2.to_ulong();
     }
     return NESOB.memory[location];
 }
@@ -1988,7 +2178,6 @@ uint8_t scan02;
 std::bitset<16> tempBitBuffer162;
 void handleOther()
 {
-    handleMMC3irq();
     /*
     if(NESOB.scanline == 0)
     {
@@ -2139,6 +2328,8 @@ void ifBreakpoint()
     if(breakpoint == true)
         {
             printRegs();
+            printf("MMC1Counter: 0x%X\n",MMC1counter);
+            printf("irqcount: 0x%X\n",irqCount);
             printf("Continue?\n");
             cin>>options;
             if(options == 's')
@@ -2170,4 +2361,165 @@ void ifBreakpoint()
                 NESOB.pc++;
             }
         }
+}
+uint8_t tasFile[5500000]; // 5 Megabytes
+bool playTAS = false;
+uint64_t tasLocation = 0;
+uint8_t nesPort0;
+uint8_t nesPort1;
+uint8_t expectLength0;
+uint8_t expectLength1;
+int handleInputTas()
+{
+    //tasLocation = 0x18BF;
+    printf("TASFRAMEBEGIN 0x%X\n", tasLocation);
+    while(tasFile[tasLocation] != '|')
+    {
+        tasLocation++;
+    //    if(tasLocation == 0x8000)
+    //    {
+    //        return 1;
+    //    }
+    }
+    printf("TASFRAMEBEGIN2 0x%X\n", tasLocation);
+    //breakpoint = true;
+    tasLocation += 1;
+    if(tasFile[tasLocation] == '1')
+    {
+        NESOB.sp -= 3;
+        NESOB.pflag = NESOB.pflag | 0x04;
+        NESOB.memory[0x4015] = 0;
+        NESOB.pc = NESOB.memory[0xFFFD] << 8 | NESOB.memory[0xFFFC];
+    }
+    tasLocation += 2;
+    if(nesPort0 == 0)
+    {
+
+    }
+    if(nesPort0 == 1)
+    {
+        if(tasFile[tasLocation] == 'R')
+        {
+            controlBuffer[7] = 1;
+        }
+        if(tasFile[tasLocation] != 'R')
+        {
+            controlBuffer[7] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'L')
+        {
+            controlBuffer[6] = 1;
+        }
+        if(tasFile[tasLocation] != 'L')
+        {
+            controlBuffer[6] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'D')
+        {
+            controlBuffer[5] = 1;
+        }
+        if(tasFile[tasLocation] != 'D')
+        {
+            controlBuffer[5] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'U')
+        {
+            controlBuffer[4] = 1;
+        }
+        if(tasFile[tasLocation] != 'U')
+        {
+            controlBuffer[4] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'T')
+        {
+            controlBuffer[3] = 1;
+        }
+        if(tasFile[tasLocation] != 'T')
+        {
+            controlBuffer[3] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'S')
+        {
+            controlBuffer[2] = 1;
+        }
+        if(tasFile[tasLocation] != 'S')
+        {
+            controlBuffer[2] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'B')
+        {
+            controlBuffer[1] = 1;
+        }
+        if(tasFile[tasLocation] != 'B')
+        {
+            controlBuffer[1] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+        tasLocation++;
+        if(tasFile[tasLocation] == 'A')
+        {
+            controlBuffer[0] = 1;
+        }
+        if(tasFile[tasLocation] != 'A')
+        {
+            controlBuffer[0] = 0;
+        }
+        printf("TasFileInput: %c\n",tasFile[tasLocation]);
+    }
+    if(nesPort1 == 0)
+    {
+        tasLocation += 4;
+    }
+    if(nesPort1 == 1)
+    {
+        tasLocation += 12;
+    }
+    printf("TASFRAMEEND 0x%X\n", tasLocation);
+    return 0;
+}
+FILE* nestestLog;
+char nestestLog2[200];
+char nestestLog3[200];
+int cycleCount;
+uint8_t flagNestest;
+void nestestCompare()
+{
+    //fscanf(nestestLog, "\n");
+
+    fscanf(nestestLog, "\n");
+    fscanf(nestestLog, "%200[^\n]", nestestLog2);
+
+    //fscanf(nestestLog, "%200[^\n]", nestestLog2);
+    fscanf(nestestLog, "%65[^?]:%X %10[^?] %i", nestestLog3, &flagNestest, nestestLog2, &cycleCount);
+    //fscanf(nestestLog, "%78[^?]:  %i\n", nestestLog2, &cycleCount);
+    std::cout<<nestestLog3<<std::endl;
+    std::cout<<nestestLog2<<std::endl;
+    printf("CYCLES: %i     NESTESTCY: %i\n", NESOB.cycles % cycleModulo, cycleCount);
+    printf("FLAG: 0x%X     NESTESTFL: 0x%X\n", NESOB.pflag, flagNestest);
+    if((NESOB.cycles % cycleModulo) != cycleCount)
+    {
+        printf("BAD CYCLES!\n");
+        breakpoint = true;
+    }
+    if(NESOB.pflag != flagNestest)
+    {
+        printf("BAD FLAG!\n");
+        breakpoint = true;
+    }
+    //fscanf(nestestLog, "%200[^\n]", nestestLog2);
+    //fscanf(nestestLog, "%78[^?]:  %i\n", nestestLog2, &cycleCount);
+    //cout<<nestestLog2<<endl;
+    //cout<<cycleCount<<endl;
 }

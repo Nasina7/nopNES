@@ -132,7 +132,7 @@ void saveNESstate()
                 printf("Type name for save state.\n");
                 scanf("%s",savestatename);
             }
-            savestate = fopen(savestatename,"w+");
+            savestate = fopen(savestatename,"wb");
             fwrite(NESOB.memory,sizeof(uint8_t),0x10000,savestate);
             fwrite(NESOB.PPUmemory,sizeof(uint8_t),0x4000,savestate);
             fwrite(OAMmem,sizeof(uint8_t),0x100,savestate);
@@ -164,7 +164,7 @@ void loadNESstate()
                 printf("Type name for save state.\n");
                 scanf("%s",savestatename);
             }
-            saveload = fopen(savestatename,"r");
+            saveload = fopen(savestatename,"rb");
             fread(NESOB.memory,sizeof(uint8_t),0x10000,saveload);
             fread(NESOB.PPUmemory,sizeof(uint8_t),0x4000,saveload);
             fread(OAMmem,sizeof(uint8_t),0x100,saveload);
@@ -184,10 +184,114 @@ void loadNESstate()
 }
 bool resN;
 bool rewind2;
+char filenameTAS[100];
+uint64_t tasFileSize;
+bool initTAS;
+FILE *tas;
+FILE *tasdump;
+char configTest[300];
+bool readport = false;
+uint8_t exitLoop2;
+uint64_t valueTAS;
 int handleControlsr()
 {
     switch( SDL_EVENT_HANDLING.key.keysym.sym )
         {
+
+        case SDLK_h:
+            if(swapRender == true)
+            {
+                swapRender = false;
+                SDL_DestroyRenderer(renderer);
+                renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+                textureScanlineF = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,256, 240);
+                break;
+            }
+            if(swapRender == false)
+            {
+                swapRender = true;
+                SDL_DestroyRenderer(renderer);
+                renderer = SDL_CreateRenderer(nopNESwindow, -1, SDL_RENDERER_ACCELERATED);
+                textureScanlineF = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGB888,SDL_TEXTUREACCESS_STREAMING,256, 240);
+                break;
+            }
+        break;
+
+        case SDLK_b:
+            bit4 = testRender;
+            bit4.flip(0);
+            testRender = bit4.to_ulong();
+        break;
+
+        case SDLK_PERIOD:
+            printf("Load TAS to play: ");
+            cin>>filenameTAS;
+            tas = fopen(filenameTAS, "rb");
+            if(tas == NULL)
+            {
+                printf("CANNOT LOAD!\n");
+                return 1;
+            }
+            fseek(tas, 0, SEEK_END);
+            tasFileSize = ftell(tas);
+            printf("TAS FILE SIZE: %i\n",tasFileSize);
+            fseek(tas, 0, SEEK_SET);
+            fread(tasFile, sizeof(uint8_t), tasFileSize, tas);
+
+            fseek(tas, 0, SEEK_SET);
+            readport = true;
+            exitLoop2 = 0;
+            while(readport == true)
+            {
+                fscanf(tas, "%40[^\n]\n", configTest, valueTAS);
+                cout<<configTest<<endl;
+                if(configTest[0] == 'p' && configTest[1] == 'o')
+                {
+                    break;
+                }
+                //printf("val: 0x%X\n",valueTAS);
+                exitLoop2++;
+                if(exitLoop2 == 30)
+                {
+                    break;
+                }
+            }
+            if(configTest[6] == '0')
+            {
+                nesPort0 = 0;
+            }
+            if(configTest[6] == '1')
+            {
+                nesPort0 = 1;
+            }
+            fscanf(tas, "%40[^\n]\n", configTest, valueTAS);
+            if(configTest[6] == '0')
+            {
+                nesPort1 = 0;
+            }
+            if(configTest[6] == '1')
+            {
+                nesPort1 = 1;
+            }
+            readport = false;
+            //fscanf(tas, "%300[^\n]\n", configTest);
+            //cout<<configTest<<endl;
+
+
+            fclose(tas);
+            //playTAS = true;
+            initTAS = true;
+
+            tasdump = fopen ("log/tasdump", "w+");
+            fwrite (tasFile , sizeof(char), sizeof(tasFile),tasdump);
+            fclose (tasdump);
+
+        break;
+
+        case SDLK_g:
+            printf("Scan Data Num: ");
+            cin>>rrr;
+        break;
 
         case SDLK_LSHIFT:
             aPress = false;
@@ -200,7 +304,7 @@ int handleControlsr()
             saveNESstate();
         break;
 
-        case SDLK_o:
+        case SDLK_COMMA:
             loadNESstate();
         break;
 
@@ -486,9 +590,9 @@ int handleSDLcontrol()
         }
     if(aPress == true)
     {
-        //rewindActive = true;
-        //handleRewind();
-        //displayMessagebox("Rewinding...",2);
+        rewindActive = true;
+        handleRewind();
+        displayMessagebox("Rewinding...",2);
     }
     if(aPress == false)
     {
